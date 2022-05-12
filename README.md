@@ -22,3 +22,5 @@ make linux
 
 I used `sudo apt-get install libsdl2-dev` and not `libsdl2-2.0` like the [bgfx start tutorial](https://www.sandeepnambiar.com/getting-started-with-bgfx/) suggested.
 
+# Resources Referenced
+https://gist.github.com/dirkk0/cad259e6a3965abb4178
