@@ -1,10 +1,10 @@
 # Installation Notes
-This project was built using Ubuntu on WSL, using VS Code Server. Makefiles were manually written, although there exists a [Cmake option for BGFX](https://github.com/widberg/bgfx.cmake).
+This project was built using Ubuntu on WSL, using VS Code Server. Makefiles were manually written, although there exists a [Cmake option for BGFX](https://github.com/widberg/bgfx.cmake). It was run through [MobaXTerm](https://mobaxterm.mobatek.net/demo.html) terminal connecting to WSL, as graphical applications are not supported out of the box with WSL currently. MobaXTerm facilitates forwarding of the WSL DISPLAY environment variable to Windows desktop.
 
-Linux setup used, from [bgfx build setup](https://bkaradzic.github.io/bgfx/build.html):
+Linux setup used from [bgfx build setup](https://bkaradzic.github.io/bgfx/build.html), with additional SDL2 library:
 
 ```
-sudo apt-get install libgl1-mesa-dev x11proto-core-dev libx11-dev
+sudo apt-get install libsdl2-dev libgl1-mesa-dev x11proto-core-dev libx11-dev
 ```
 
 Installed bgfx libs:

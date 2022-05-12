@@ -1,7 +1,9 @@
 #include <iostream>
 #include "getting_started/tutorial.h"
 
-int main ( int argc, char* args[] ) {
+// number of args, each of which is pointer to char* (a string)
+int main (int argc, char* args[]) {
     std::cout << "Hello world" << std::endl;
-    return 0;
+    Tutorial t;
+    return t.RunTutorial();
 }

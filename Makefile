@@ -50,7 +50,7 @@ dir_guard:
 
 # Link .o files into executable located at bin/main. Overwrite existing executable if necessary. Requires that objects have been compiled already
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(COMPILER_FLAGS) $(OBJECTS) -o $(BIN_DIR)/$@
+	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS)
 
 # Requires that executable task has completed, logs a message in console saying it's done.
 all : $(EXECUTABLE)
