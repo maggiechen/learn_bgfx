@@ -24,3 +24,7 @@ I used `sudo apt-get install libsdl2-dev` and not `libsdl2-2.0` like the [bgfx s
 
 # Resources Referenced
 https://gist.github.com/dirkk0/cad259e6a3965abb4178
+
+# VS Code
+If you get SDL2 squiggly errors due to begin_code.h being missing, follow the steps here to add SDL2 to your path:
+https://stackoverflow.com/a/69476174/19099501

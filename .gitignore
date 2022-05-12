@@ -3,3 +3,5 @@ bimg/
 bx/
 bin/
 .editorconfig
+*.bin
+.vscode/
