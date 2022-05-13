@@ -13,7 +13,8 @@ CC = g++
 
 # COMPILER_FLAGS specifies the additional compilation options we're using
 # -w suppresses all warnings
-COMPILER_FLAGS = -w
+# define BX_CONFIG_DEBUG as it's a macro required to include bx/math.h
+COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG
 
 # Source files
 SOURCES = main.cpp getting_started/tutorial.cpp getting_started/PosColorVertex.cpp
