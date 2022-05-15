@@ -14,7 +14,8 @@ CC = g++
 # COMPILER_FLAGS specifies the additional compilation options we're using
 # -w suppresses all warnings
 # define BX_CONFIG_DEBUG as it's a macro required to include bx/math.h
-COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG
+# define we're using linux. There's some conditional includes in the project. Specifically the Nuget package for SDL2 uses "SDL/" but the apt package we use on Ubuntu is "SDL2/"
+COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG -DLINUX
 
 # Source files
 SOURCES = main.cpp getting_started/tutorial.cpp getting_started/PosColorVertex.cpp
@@ -67,7 +68,7 @@ all : $(EXECUTABLE)
     --type vertex \
     --verbose \
     -i bgfx/src \
-    --varyingdef getting_started/varying.def.sc
+	--varyingdef getting_started/varying.def.sc
 	./bgfx/.build/linux64_gcc/bin/shadercRelease \
     -f getting_started/f_simple.sc \
     -o f_simple.bin \
@@ -77,3 +78,23 @@ all : $(EXECUTABLE)
     -i bgfx/src \
     --varyingdef getting_started/varying.def.sc
 	@echo Make has finished.
+
+.PHONY: shaders_windows
+shaders_windows:
+	./bgfx/.build/win64_vs2017/bin/shadercRelease \
+    -f getting_started/v_simple.sc \
+    -o v_simple.bin \
+    --platform windows \
+    --type vertex \
+    --verbose \
+    -i bgfx/src \
+	--varyingdef getting_started/varying.def.sc
+	./bgfx/.build/win64_vs2017/bin/shadercRelease \
+    -f getting_started/f_simple.sc \
+    -o f_simple.bin \
+    --platform windows \
+    --type fragment \
+    --verbose \
+    -i bgfx/src \
+    --varyingdef getting_started/varying.def.sc
+	@echo Shaders compiled

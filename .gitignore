@@ -5,3 +5,5 @@ bin/
 .editorconfig
 *.bin
 .vscode/
+vs-chromium-project.txt
+learn_bgfx/x64/

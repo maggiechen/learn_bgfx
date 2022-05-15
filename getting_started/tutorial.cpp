@@ -35,16 +35,26 @@ int Tutorial::RunTutorial() {
         // now we get our linux specific mojo down
     bgfx::PlatformData platformData;
     // native display type
-    platformData.ndt = windowInfo.info.x11.display; // The X Window system is also called X11, sometimes also just "X"
+    
+#ifdef LINUX
+    // The X Window system is also called X11, sometimes also just "X"
+    platformData.ndt = windowInfo.info.x11.display;
+    platformData.nwh = (void*)(uintptr_t)windowInfo.info.x11.window;
+#else
+    platformData.ndt = windowInfo.info.win.hdc;
     // native window handle
     // window is an unsigned long, so truncate it to a uintptr and cast to void* since that's what the native window handle field wants
-    platformData.nwh = (void*)(uintptr_t)windowInfo.info.x11.window;
+    platformData.nwh = (void*)(uintptr_t)windowInfo.info.win.window;
+#endif
 
     bgfx::setPlatformData(platformData);
     bgfx::renderFrame(); // empty frame
     bgfx::Init initParams;
     initParams.type = bgfx::RendererType::OpenGL;
     bgfx::init(initParams);
+
+    // Have to initialize the vertex attributes!!!
+    PosColorVertex::init();
 
     // fill in the vertex buffer with the position+color data and inform it of the vertex layout
     m_vbh = bgfx::createVertexBuffer(
@@ -104,8 +114,8 @@ int Tutorial::RunTutorial() {
         bgfx::setVertexBuffer(0, m_vbh);
         bgfx::setIndexBuffer(m_ibh);
 
-        // bgfx::setState(BGFX_STATE_DEFAULT); // default renders triangles
-        // bgfx::submit(0, m_program); // submit primitive for rendering to view 0
+        bgfx::setState(BGFX_STATE_DEFAULT); // default renders triangles
+        bgfx::submit(0, m_program); // submit primitive for rendering to view 0
 
         bgfx::frame();
     }
@@ -120,7 +130,7 @@ int Tutorial::RunTutorial() {
 bgfx::ShaderHandle Tutorial::loadShader(const char* name) {
     char* shaderData = new char[2048];
     std::ifstream file;
-    size_t fileSize;
+    size_t fileSize = 0;
     file.open(name);
     if (!file.is_open()) {
         std::cout << "Could not open shader file" << std::endl;
@@ -138,5 +148,6 @@ bgfx::ShaderHandle Tutorial::loadShader(const char* name) {
 
     bgfx::ShaderHandle handle = bgfx::createShader(mem);
     bgfx::setName(handle, name);
+    delete [] shaderData;
     return handle;
 }

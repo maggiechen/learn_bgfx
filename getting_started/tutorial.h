@@ -4,8 +4,13 @@
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bx/math.h>   // this doesn't like being included in cpp files. Complains about some BX_CONFIG_DEBUG macro not being defined
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
+#ifdef LINUX
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_syswm.h>
+#else
+    #include <SDL.h>
+    #include <SDL_syswm.h>
+#endif
 
 class Tutorial {
 public:
