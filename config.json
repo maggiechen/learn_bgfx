@@ -1,0 +1,34 @@
+{
+    "shapes": [
+        {
+            "primitive": "square",
+            "details": {
+                "size": 4.0,
+                "color": "red",
+                "transform": {
+                    "position": {"x": 5, "y": 1, "z": 6}
+                }
+            }
+        },
+        {
+            "primitive": "square",
+            "details": {
+                "size": 3.0,
+                "color": "red",
+                "transform": {
+                    "position": {"x": -1, "y": -2, "z": -4}
+                }
+            }
+        },
+        {
+            "primitive": "square",
+            "details": {
+                "size": 2.0,
+                "color": "red",
+                "transform": {
+                    "position": {"x": 0, "y": 1, "z": 2}
+                }
+            }
+        }
+    ]
+}

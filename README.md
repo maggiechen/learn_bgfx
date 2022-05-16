@@ -61,8 +61,9 @@ TODO: This set up will be overwritten if you go through it again. Write a versio
 
 Create VS projects for examples and tools (including shaderc). 
 
-> `.\bx\tools\bin\windows\genie --with-tools --with-examples vs2017`
+> `.\bx\tools\bin\windows\genie --with-tools --with-examples vs2017`  
 > `start .build\projects\vs2017\bgfx.sln`
+
 Build shaderc project.
 
 Create new project. Add C/C++/Preprocessor > Preprocessor Definitions:
@@ -84,3 +85,12 @@ Then run
 make shaders_windows
 ```
 in cmd line. You will need to install GNU coreutils and add it to your PATH variable.
+
+# Additional Dependencies
+https://github.com/nlohmann/json
+Download the .hpp file from release and place it at `json/json.hpp`
+
+# Graphics Debugging Tips (Mostly philosophical)
+When doing graphics programming, sometimes it's better to first try things until it looks correct, and _then_ figure out why it looks correct. It takes far less time to test a hunch than it does to statically analyze why something looks wrong, and once you've got it looking right, you at least know that the logic you have must be explainable by some formula. This might be considered "programming by combinatorics" by some, but in the right situations it really can be faster.
+
+When learning from other projects, first copy/paste the other project wholesale and make sure it actually runs, before trying to innovate on it. Graphics APIs are numerous and it's common for solutions to break when moved to a different platform. It could really be that it's not your code that's the issue, but the platform. Don't waste time chasing down a bug that might not have even been caused by a difference between your code and the original author's.

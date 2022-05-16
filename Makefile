@@ -15,10 +15,10 @@ CC = g++
 # -w suppresses all warnings
 # define BX_CONFIG_DEBUG as it's a macro required to include bx/math.h
 # define we're using linux. There's some conditional includes in the project. Specifically the Nuget package for SDL2 uses "SDL/" but the apt package we use on Ubuntu is "SDL2/"
-COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG -DLINUX
+COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG -DLINUX -std=c++11
 
 # Source files
-SOURCES = main.cpp getting_started/tutorial.cpp getting_started/PosColorVertex.cpp
+SOURCES = main.cpp getting_started/LearnBgfx.cpp getting_started/PosColorVertex.cpp
 
 # Where all the compiled, unlinked object files go
 BIN = ./bin
@@ -38,6 +38,8 @@ LINKER_FLAGS = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so -lSDL2 -
 # BGFX headers
 BGFX_HEADERS = -Ibgfx/include -Ibx/include -Ibimg/include
 
+JSON_LIBRARY_HEADER = -Ijson/
+
 # Task: To create all the .o files in the bin folder, require that we have access to all the .cpp files.
 # Execute the dir_guard task as an order-only prereq (i.e. After the pipe |, which means it create the folder if necessary,
 # but not attempt to do this anytime a timestamp in the folder changes due to files being added/removed/renamed etc)
@@ -45,7 +47,7 @@ BGFX_HEADERS = -Ibgfx/include -Ibx/include -Ibimg/include
 # The $< means the first requirement for the task, i.e. the .cpp file being compiled
 # patsubst (pattern substitute) means substitute the cpp with o in the cpp file's path. The % means wildcard.
 $(BIN)/%.o: %.cpp | dir_guard
-	$(CC) -c $< -o $(BIN)/$(patsubst %.cpp,%.o,$<) $(COMPILER_FLAGS) $(BGFX_HEADERS)
+	$(CC) -c $< -o $(BIN)/$(patsubst %.cpp,%.o,$<) $(COMPILER_FLAGS) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
 
 # Since dir_guard is not an actual file that will be made by running it, it will be run
 # on each make call. Assigning to .PHONY (reserved target) makes it so that it does not run each time.
@@ -56,7 +58,7 @@ dir_guard:
 
 # Link .o files into executable located at bin/main. Overwrite existing executable if necessary. Requires that objects have been compiled already
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS) $(BGFX_HEADERS)
+	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
 
 # Requires that executable task has completed, logs a message in console saying it's done.
 # Recompile the shaders into .bin files.

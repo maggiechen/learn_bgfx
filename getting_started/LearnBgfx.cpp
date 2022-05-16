@@ -1,11 +1,47 @@
-#include "tutorial.h"
+#define LOG(x) \
+    std::cout << x << std::endl
 
-#include "PosColorVertex.h"
-
+#include "LearnBgfx.h"
+#include <json.hpp>
 #include <iostream>  // I/O for cout
 #include <fstream>   // file stream for loading shader files
+#include <vector>
 
-int Tutorial::RunTutorial() {
+using json = nlohmann::json;
+const std::unordered_map<std::string, LearnBgfx::PrimitiveType> LearnBgfx::s_primitiveTypes = {{"square", PrimitiveType::Square}};
+
+namespace lb {
+struct Position {
+    float x;
+    float y;
+    float z;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Position, x, y, z)
+
+struct Transform {
+    Position position;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Transform, position)
+
+struct Square {
+    float size;
+    std::string color;
+    Transform transform;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Square, size, color, transform)
+}
+
+// TODO: This doesn't raise any errors even if I don't free this memory. Need to get valgrind or something to verify
+// this isn't leaking
+LearnBgfx::~LearnBgfx() {
+    delete m_vertexData;
+    delete m_indexData;
+}
+
+int LearnBgfx::Run(const char* configFile) {
+    loadConfigFile(configFile);
+
     // Initialize SDL window
     {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -35,7 +71,7 @@ int Tutorial::RunTutorial() {
         // now we get our linux specific mojo down
     bgfx::PlatformData platformData;
     // native display type
-    
+
 #ifdef LINUX
     // The X Window system is also called X11, sometimes also just "X"
     platformData.ndt = windowInfo.info.x11.display;
@@ -83,8 +119,13 @@ int Tutorial::RunTutorial() {
     SDL_Event currentEvent;
     while (!quit) {
         while (SDL_PollEvent(&currentEvent) != 0) {
-            if (currentEvent.type == SDL_QUIT) {
+            switch (currentEvent.type) {
+            case SDL_QUIT:
                 quit = true;
+            case SDL_KEYDOWN:
+                if (currentEvent.key.keysym.sym == SDLK_ESCAPE) {
+                    quit = true;
+                }
             }
         }
         // set up camera
@@ -127,7 +168,7 @@ int Tutorial::RunTutorial() {
     return 0;
 }
 
-bgfx::ShaderHandle Tutorial::loadShader(const char* name) {
+bgfx::ShaderHandle LearnBgfx::loadShader(const char* name) {
     char* shaderData = new char[2048];
     std::ifstream file;
     size_t fileSize = 0;
@@ -148,6 +189,46 @@ bgfx::ShaderHandle Tutorial::loadShader(const char* name) {
 
     bgfx::ShaderHandle handle = bgfx::createShader(mem);
     bgfx::setName(handle, name);
-    delete [] shaderData;
+    delete[] shaderData;
     return handle;
 }
+
+void LearnBgfx::loadConfigFile(const char* configFile) {
+    std::ifstream file;
+    file.open(configFile);
+    if (!file.is_open()) {
+        LOG("Couldn't open configuration file");
+        return;
+    }
+    json j;
+    file >> j;
+    if (j.find("shapes") == j.end()) {
+        LOG("You have no shapes defined in the config file");
+        return;
+    }
+
+    json shapes = j["shapes"];
+    LOG(shapes.size() << " shape(s) loaded.");
+    std::vector<lb::Square> squares;
+
+    for (json shape : shapes) {
+        auto primitive = shape["primitive"].get<std::string>();
+        switch (LearnBgfx::s_primitiveTypes.find(primitive)->second) {
+            case PrimitiveType::Square:
+                {
+                auto details = shape["details"].get<lb::Square>();
+                squares.push_back(std::move(details));
+                }
+                break;
+            default:
+                LOG("Unknown shape: " << shape);
+        }
+    }
+    
+    LOG("Squares loaded:" << squares.size());
+    m_vertexCount = squares.size() * 8;
+    m_vertexData = new PosColorVertex[m_vertexCount];
+    m_indexCount = squares.size() * 6 * 2 * 3; // 6 faces per cube * 2 tris per face * 3 vertices per tri
+    m_indexData = new uint16_t[m_indexCount];
+}
+

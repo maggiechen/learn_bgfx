@@ -25,7 +25,7 @@ static PosColorVertex s_cubeVertices[] =
     { -0.5f,  0.5f, 0.0f, 0xff00ff00 }
 };
 
-static const uint16_t s_cubeTriList[] =
+static uint16_t s_cubeTriList[] =
 {
     0,1,3,
     1,2,3
