@@ -1,13 +1,14 @@
-#include "LearnBgfx.h"
-#include "SquareGeo.h"
 #include "GeometryLoader.h"
+#include "LearnBgfx.h"
+#include "ShaderLoader.h"
+#include "SquarePrimitive.h"
 #include "Utils.h"
 #include <iostream>  // I/O for cout
 #include <fstream>   // file stream for loading shader files
 
-static constexpr const float error[4] {1, 0, 1, 1};
-static constexpr const float white[4] {1, 1, 1, 1};
-static constexpr const float red[4] {1, 0, 0, 1};
+static constexpr const float error[4]{ 1, 0, 1, 1 };
+static constexpr const float white[4]{ 1, 1, 1, 1 };
+static constexpr const float red[4]{ 1, 0, 0, 1 };
 
 // TODO: This doesn't raise any errors even if I don't free this memory. Need to get valgrind or something to verify
 // this isn't leaking
@@ -20,7 +21,7 @@ int LearnBgfx::Run(const char* configFile) {
     GeometryLoader loader;
     loader.loadConfigFile(configFile, squares);
 
-    SquareGeo square;
+    SquarePrimitive square;
 
     // Initialize SDL window
     {
@@ -86,8 +87,13 @@ int LearnBgfx::Run(const char* configFile) {
     }
 
     // load shaders
-    bgfx::ShaderHandle vsh = loadShader("v_simple.bin");
-    bgfx::ShaderHandle fsh = loadShader("f_simple.bin");
+    bgfx::ShaderHandle vsh, fsh;
+    {
+        ShaderLoader vLoader("v_simple.bin");
+        ShaderLoader fLoader("f_simple.bin");
+        vsh = vLoader.GetHandle();
+        fsh = fLoader.GetHandle();
+    }
     m_program = bgfx::createProgram(vsh, fsh, true); // true to destroy shaders when program is destroyed
 
     bgfx::reset(kWidth, kHeight, BGFX_RESET_VSYNC);
@@ -158,29 +164,4 @@ int LearnBgfx::Run(const char* configFile) {
     bgfx::shutdown();
     SDL_Quit();
     return 0;
-}
-
-bgfx::ShaderHandle LearnBgfx::loadShader(const char* name) {
-    char* shaderData = new char[2048];
-    std::ifstream file;
-    size_t fileSize = 0;
-    file.open(name);
-    if (!file.is_open()) {
-        std::cout << "Could not open shader file" << std::endl;
-    } else {
-        file.seekg(0, std::ios::end); // seek to the end of the file, with an offset of 0, so exactly the end
-        fileSize = file.tellg(); // gets the g index I guess?
-        // seek to start and read
-        file.seekg(0, std::ios::beg);
-        file.read(shaderData, fileSize);
-        file.close();
-    }
-    // copy memory into a buffer. Add an extra null termination character
-    const bgfx::Memory* mem = bgfx::copy(shaderData, fileSize + 1);
-    mem->data[mem->size - 1] = '\0';
-
-    bgfx::ShaderHandle handle = bgfx::createShader(mem);
-    bgfx::setName(handle, name);
-    delete[] shaderData;
-    return handle;
 }

@@ -1,6 +1,6 @@
-#include "SquareGeo.h"
+#include "SquarePrimitive.h"
 
-SquareGeo::SquareGeo() {    
+SquarePrimitive::SquarePrimitive() {    
     int facesPerSquare = 6;
     int verticesPerFace = 4;
     int indicesPerFace = 6;
@@ -58,7 +58,7 @@ SquareGeo::SquareGeo() {
     }
 }
 
-SquareGeo::~SquareGeo() {
+SquarePrimitive::~SquarePrimitive() {
     delete vertexData;
     delete indexData;
 }

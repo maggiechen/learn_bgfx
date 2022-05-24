@@ -1,11 +1,11 @@
 #include "PosColorVertex.h"
 
-class SquareGeo {
+class SquarePrimitive {
 public:
     PosColorVertex* vertexData; // vertex buffer
     size_t vertexCount;
     uint16_t* indexData;  // index buffer
     size_t indexCount; 
-    SquareGeo();
-    ~SquareGeo();
+    SquarePrimitive();
+    ~SquarePrimitive();
 };

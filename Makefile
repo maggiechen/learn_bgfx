@@ -18,7 +18,12 @@ CC = g++
 COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG -DLINUX -std=c++11
 
 # Source files
-SOURCES = main.cpp getting_started/LearnBgfx.cpp getting_started/PosColorVertex.cpp getting_started/SquareGeo.cpp getting_started/GeometryLoader.cpp
+SOURCES = main.cpp getting_started/LearnBgfx.cpp \
+    getting_started/GeometryLoader.cpp \
+    getting_started/PosColorVertex.cpp \
+    getting_started/ShaderLoader.cpp \
+    getting_started/SquarePrimitive.cpp
+
 
 # Where all the compiled, unlinked object files go
 BIN = ./bin
