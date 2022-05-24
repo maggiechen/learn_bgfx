@@ -1,48 +1,26 @@
-#define LOG(x) \
-    std::cout << x << std::endl
-
 #include "LearnBgfx.h"
-#include <json.hpp>
+#include "SquareGeo.h"
+#include "GeometryLoader.h"
+#include "Utils.h"
 #include <iostream>  // I/O for cout
 #include <fstream>   // file stream for loading shader files
-#include <vector>
 
-bool useDynamic = true;
-
-using json = nlohmann::json;
-const std::unordered_map<std::string, LearnBgfx::PrimitiveType> LearnBgfx::s_primitiveTypes = { {"square", PrimitiveType::Square} };
-
-namespace lb {
-    struct Position {
-        float x;
-        float y;
-        float z;
-    };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Position, x, y, z)
-
-        struct Transform {
-        Position position;
-    };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Transform, position)
-
-        struct Square {
-        float size;
-        std::string color;
-        Transform transform;
-    };
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Square, size, color, transform)
-}
+static constexpr const float error[4] {1, 0, 1, 1};
+static constexpr const float white[4] {1, 1, 1, 1};
+static constexpr const float red[4] {1, 0, 0, 1};
 
 // TODO: This doesn't raise any errors even if I don't free this memory. Need to get valgrind or something to verify
 // this isn't leaking
 LearnBgfx::~LearnBgfx() {
-    delete m_vertexData;
-    delete m_indexData;
+    bgfx::destroy(u_color);
 }
 
 int LearnBgfx::Run(const char* configFile) {
-    loadConfigFile(configFile);
+    std::vector<lb::Square> squares;
+    GeometryLoader loader;
+    loader.loadConfigFile(configFile, squares);
+
+    SquareGeo square;
 
     // Initialize SDL window
     {
@@ -90,26 +68,22 @@ int LearnBgfx::Run(const char* configFile) {
     bgfx::Init initParams;
     initParams.type = bgfx::RendererType::OpenGL;
     bgfx::init(initParams);
+    bgfx::setDebug(BGFX_DEBUG_NONE);
+
+    u_color = bgfx::createUniform("u_color", bgfx::UniformType::Vec4);
 
     // Have to initialize the vertex attributes!!!
     PosColorVertex::init();
 
     // fill in the vertex buffer with the position+color data and inform it of the vertex layout
-    const bgfx::Memory* vertexRef = bgfx::makeRef(m_vertexData, m_vertexCount * sizeof(PosColorVertex));
-    const bgfx::Memory* indexRef = bgfx::makeRef(m_indexData, m_indexCount * sizeof(uint16_t));
+    const bgfx::Memory* vertexRef = bgfx::makeRef(square.vertexData, square.vertexCount * sizeof(PosColorVertex));
+    const bgfx::Memory* indexRef = bgfx::makeRef(square.indexData, square.indexCount * sizeof(uint16_t));
     m_vbh = bgfx::createVertexBuffer(vertexRef, PosColorVertex::ms_decl);
     m_ibh = bgfx::createIndexBuffer(indexRef);
 
     if (!isValid(m_vbh)) {
         LOG("invalid vertex buffer handle");
     }
-    // debugging
-    // for (int i = 0; i < m_vertexCount; ++i) {
-    //     LOG(m_vertexData[i]);
-    // }
-    // for (int i = 0; i < m_indexCount; ++i) {
-    //     LOG(m_indexData[i]);
-    // }
 
     // load shaders
     bgfx::ShaderHandle vsh = loadShader("v_simple.bin");
@@ -137,35 +111,45 @@ int LearnBgfx::Run(const char* configFile) {
             }
         }
         // set up camera
-        {
-            const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
-            const bx::Vec3 eye = { 0.0f, 0.0f, 10.0f };
+        const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
+        const bx::Vec3 eye = { 0.0f, 0.0f, 10.0f };
 
-            float view[16];
-            bx::mtxLookAt(view, eye, at);
+        float view[16];
+        bx::mtxLookAt(view, eye, at);
 
-            float proj[16];
-            // getCaps gets rendering capabilities. If homogeneuousDepth is true, then NDC is on [-1, 1]. Otherwise, [0, 1]
-            bx::mtxProj(proj, 60.0f, float(kWidth) / float(kHeight), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-            bgfx::setViewTransform(0, view, proj);
-            bgfx::setViewRect(0, 0, 0, kWidth, kHeight);
-        }
+        float proj[16];
+        // getCaps gets rendering capabilities. If homogeneuousDepth is true, then NDC is on [-1, 1]. Otherwise, [0, 1]
+        bx::mtxProj(proj, 60.0f, float(kWidth) / float(kHeight), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+        bgfx::setViewTransform(0, view, proj);
+        bgfx::setViewRect(0, 0, 0, kWidth, kHeight);
+
         bgfx::touch(0);
 
-        float mtx[16];
-        bx::mtxRotateY(mtx, 0.0f);
-        // set x/y/z = 0;
-        mtx[12] = 0.0f;
-        mtx[13] = 0.0f;
-        mtx[14] = 0.0f;
+        for (auto&& square : squares) {
+            float mtx[16];
+            bx::mtxRotateY(mtx, 0.0f);
+            // set x/y/z = 0;
+            mtx[12] = 0.0f;
+            mtx[13] = 0.0f;
+            mtx[14] = 0.0f;
+            bx::mtxScale(mtx, square.size);
+            bx::mtxTranslate(mtx, square.transform.position.x, square.transform.position.y, square.transform.position.z);
+            bgfx::setTransform(mtx);
+            bgfx::setVertexBuffer(0, m_vbh);
+            bgfx::setIndexBuffer(m_ibh);
 
-        bgfx::setTransform(mtx);
-        bgfx::setVertexBuffer(0, m_vbh);
-        bgfx::setIndexBuffer(m_ibh);
+            const char* shapeColorString = square.color.c_str();
+            if (strcmp(shapeColorString, "red") == 0) {
+                bgfx::setUniform(u_color, red);
+            } else if (strcmp(shapeColorString, "white") == 0) {
+                bgfx::setUniform(u_color, white);
+            } else {
+                bgfx::setUniform(u_color, error);
+            }
 
-        bgfx::setState(BGFX_STATE_DEFAULT); // default renders triangles
-        bgfx::submit(0, m_program); // submit primitive for rendering to view 0
-
+            bgfx::setState(BGFX_STATE_DEFAULT); // default renders triangles
+            bgfx::submit(0, m_program); // submit primitive for rendering to view 0
+        }
         bgfx::frame();
     }
 
@@ -200,112 +184,3 @@ bgfx::ShaderHandle LearnBgfx::loadShader(const char* name) {
     delete[] shaderData;
     return handle;
 }
-
-void LearnBgfx::loadConfigFile(const char* configFile) {
-    std::ifstream file;
-    file.open(configFile);
-    if (!file.is_open()) {
-        LOG("Couldn't open configuration file");
-        return;
-    }
-    json j;
-    file >> j;
-    if (j.find("shapes") == j.end()) {
-        LOG("You have no shapes defined in the config file");
-        return;
-    }
-
-    json shapes = j["shapes"];
-    LOG(shapes.size() << " shape(s) loaded.");
-    std::vector<lb::Square> squares;
-
-    for (json shape : shapes) {
-        auto primitive = shape["primitive"].get<std::string>();
-        switch (LearnBgfx::s_primitiveTypes.find(primitive)->second) {
-        case PrimitiveType::Square:
-        {
-            auto details = shape["details"].get<lb::Square>();
-            squares.push_back(std::move(details));
-        }
-        break;
-        default:
-            LOG("Unknown shape: " << shape);
-        }
-    }
-
-    LOG("Squares loaded:" << squares.size());
-    int facesPerSquare = 6;
-    int verticesPerFace = 4;
-    int indicesPerFace = 6;
-
-    int verticesPerSquare = verticesPerFace * facesPerSquare;
-    int indicesPerSquare = indicesPerFace * facesPerSquare;
-
-    m_vertexCount = squares.size() * verticesPerSquare;
-    m_vertexData = new PosColorVertex[m_vertexCount];
-    m_indexCount = squares.size() * indicesPerSquare;
-    m_indexData = new uint16_t[m_indexCount];
-
-    LOG(m_vertexCount << " " << m_indexCount);
-
-    for (int square_i = 0; square_i < squares.size(); ++square_i) {
-        // sorry, I hate this name too, but this is the index into the "index buffer"
-        // that determines the order that vertices create triangles
-        int index_i = square_i * indicesPerSquare;
-        int vertex_i = square_i * verticesPerSquare;
-        lb::Square& square = squares[square_i];
-        lb::Position& p = square.transform.position;
-
-        float sideHalf = squares[square_i].size / 2;
-        uint color = 0xffffffff;
-        if (strcmp(squares[square_i].color.c_str(), "red") == 0) {
-            color = 0xffffffff;
-        }
-        LOG("Color " << color);
-        // positive x face
-        m_vertexData[vertex_i] = { sideHalf, -sideHalf, -sideHalf, color };
-        m_vertexData[vertex_i + 1] = { sideHalf, -sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 2] = { sideHalf, sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 3] = { sideHalf, sideHalf, -sideHalf, color };
-        // -ve
-        m_vertexData[vertex_i + 4] = { -sideHalf, -sideHalf, -sideHalf, color };
-        m_vertexData[vertex_i + 5] = { -sideHalf, -sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 6] = { -sideHalf, sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 7] = { -sideHalf, sideHalf, -sideHalf, color };
-
-        // positive y face
-        m_vertexData[vertex_i + 8] = { -sideHalf, sideHalf,  -sideHalf, color };
-        m_vertexData[vertex_i + 9] = { -sideHalf, sideHalf,  sideHalf, color };
-        m_vertexData[vertex_i + 10] = { sideHalf, sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 11] = { sideHalf, sideHalf, -sideHalf, color };
-        // -ve
-        m_vertexData[vertex_i + 12] = { -sideHalf, -sideHalf,  -sideHalf, color };
-        m_vertexData[vertex_i + 13] = { -sideHalf, -sideHalf,  sideHalf, color };
-        m_vertexData[vertex_i + 14] = { sideHalf, -sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 15] = { sideHalf, -sideHalf, -sideHalf, color };
-
-        // positive z face
-        m_vertexData[vertex_i + 16] = { -sideHalf,  -sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 17] = { -sideHalf,  sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 18] = { sideHalf, sideHalf, sideHalf, color };
-        m_vertexData[vertex_i + 19] = { sideHalf, -sideHalf, sideHalf, color };
-        // -ve
-        m_vertexData[vertex_i + 20] = { -sideHalf,  -sideHalf, -sideHalf, color };
-        m_vertexData[vertex_i + 21] = { -sideHalf,  sideHalf, -sideHalf, color };
-        m_vertexData[vertex_i + 22] = { sideHalf, sideHalf, -sideHalf, color };
-        m_vertexData[vertex_i + 23] = { sideHalf, -sideHalf, -sideHalf, color };
-        LOG("Finished populating vertices");
-        for (int i = 0; i < 6; ++i) {
-            int firstVertex = vertex_i + i * verticesPerFace;
-            int firstIndex = index_i + i * indicesPerFace;
-            m_indexData[firstIndex] = firstVertex;
-            m_indexData[firstIndex + 1] = firstVertex + 1;
-            m_indexData[firstIndex + 2] = firstVertex + 2;
-            m_indexData[firstIndex + 3] = firstVertex + 2;
-            m_indexData[firstIndex + 4] = firstVertex + 3;
-            m_indexData[firstIndex + 5] = firstVertex;
-        }
-        LOG("Finished indices");
-    }
-}
-
