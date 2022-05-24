@@ -1,7 +1,7 @@
 #pragma once
 
 #include <bgfx/bgfx.h>
-
+#include <iostream>
 struct PosColorVertex {
     float m_x;
     float m_y;
@@ -16,6 +16,8 @@ struct PosColorVertex {
 
     static void init();
 };
+
+std::ostream& operator<<(std::ostream& os, const PosColorVertex& v);
 
 static PosColorVertex s_cubeVertices[] =
 {   // position           color

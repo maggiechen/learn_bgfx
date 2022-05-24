@@ -31,9 +31,12 @@ EXECUTABLE = $(BIN)/main
 OBJECTS := $(addprefix $(BIN)/, $(SOURCES:.cpp=.o))
 # EXECUTABLE = $(BIN)/exec
 
-# LINKER_FLAGS specifies the libraries we're linking against
+# LINKER_FLAGS_* specifies the libraries we're linking against
 # Note that we add SDL2 and also the shared release bgfx library. The .so extension means it's a shared library
-LINKER_FLAGS = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
+BGFX_DEBUG = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so
+BGFX_RELEASE = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so
+LINKER_FLAGS_DEBUG = $(BGFX_DEBUG) -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
+LINKER_FLAGS_RELEASE = $(BGFX_RELEASE) -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
 
 # BGFX headers
 BGFX_HEADERS = -Ibgfx/include -Ibx/include -Ibimg/include
@@ -58,7 +61,11 @@ dir_guard:
 
 # Link .o files into executable located at bin/main. Overwrite existing executable if necessary. Requires that objects have been compiled already
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
+ifeq ($(ARGS),debug)
+	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_DEBUG) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
+else
+	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_RELEASE) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
+endif
 
 # Requires that executable task has completed, logs a message in console saying it's done.
 # Recompile the shaders into .bin files.

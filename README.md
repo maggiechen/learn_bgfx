@@ -37,7 +37,7 @@ Build command for bgfx on Linux:
 ```
 cd bgfx
 make projgen   # creates the projects for the bgfx libraries for all platforms
-make linux64-release   # build for linux
+make linux   # build for linux, release AND debug
 ```
 ### VS Code
 If you get SDL2 squiggly errors due to begin_code.h being missing, follow the steps here to add SDL2 to your path:
@@ -55,6 +55,11 @@ make dist-linux # creates shaderc
 cd examples
 make all
 ```
+
+### Debug build and run:
+`sudo make all ARGS="debug" && /bin/main`
+### Release build and run:
+`sudo make all && /bin/main`
 
 # Windows Visual Studio Setup
 TODO: This set up will be overwritten if you go through it again. Write a version that puts the learn_bgfx project into another solution.

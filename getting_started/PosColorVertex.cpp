@@ -7,3 +7,8 @@ void PosColorVertex::init() {
         .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true) // 4 uint8s representing color
         .end();
 }
+
+std::ostream& operator<<(std::ostream& os, const PosColorVertex& v) {
+    os << v.m_x << " " << v.m_y << " " << v.m_z << " " << v.m_abgr;
+    return os;
+}
