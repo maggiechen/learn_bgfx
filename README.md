@@ -99,3 +99,13 @@ Download the .hpp file from release and place it at `json/json.hpp`
 When doing graphics programming, sometimes it's better to first try things until it looks correct, and _then_ figure out why it looks correct. It takes far less time to test a hunch than it does to statically analyze why something looks wrong, and once you've got it looking right, you at least know that the logic you have must be explainable by some formula. This might be considered "programming by combinatorics" by some, but in the right situations it really can be faster.
 
 When learning from other projects, first copy/paste the other project wholesale and make sure it actually runs, before trying to innovate on it. Graphics APIs are numerous and it's common for solutions to break when moved to a different platform. It could really be that it's not your code that's the issue, but the platform. Don't waste time chasing down a bug that might not have even been caused by a difference between your code and the original author's.
+
+# Converting WSL 1 container to WSL 2
+`wsl --set-version <containername> <version>`
+
+# Visual Studio Code Tips
+It complains if you're not in the ~/home directory. So create symlink and start `code .` there instead:
+
+`ln -s /mnt/c/dev/learn_bgfx ~/home/learn_bgfx`
+
+You might have to create the ~/home folder.

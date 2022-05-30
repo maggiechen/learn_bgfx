@@ -132,14 +132,13 @@ int LearnBgfx::Run(const char* configFile) {
         bgfx::touch(0);
 
         for (auto&& square : squares) {
+            float halfSide = square.size / (float)2;
             float mtx[16];
-            bx::mtxRotateY(mtx, 0.0f);
-            // set x/y/z = 0;
-            mtx[12] = 0.0f;
-            mtx[13] = 0.0f;
-            mtx[14] = 0.0f;
-            bx::mtxScale(mtx, square.size);
-            bx::mtxTranslate(mtx, square.transform.position.x, square.transform.position.y, square.transform.position.z);
+            // creates scaled, rotated, translated matrix
+            bx::mtxSRT(mtx,
+                halfSide, halfSide, halfSide,
+                square.transform.rotation.x, square.transform.rotation.y, square.transform.rotation.z,
+                square.transform.position.x, square.transform.position.y, square.transform.position.z);
             bgfx::setTransform(mtx);
             bgfx::setVertexBuffer(0, m_vbh);
             bgfx::setIndexBuffer(m_ibh);

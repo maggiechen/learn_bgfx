@@ -3,7 +3,18 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <math.h>
 const std::unordered_map<std::string, PrimitiveType> GeometryLoader::s_primitiveTypes = { {"square", PrimitiveType::Square} };
+
+float degreesToRadians(float degrees) {
+    return degrees * M_PI / (float)180;
+}
+
+std::ostream& operator<<(std::ostream& os, const lb::Transform& t) {
+    os << "pos: " << t.position.x << ", " << t.position.y << ", " << t.position.z << std::endl;
+    os << "rot: " << t.rotation.x << ", " << t.rotation.y << ", " << t.rotation.z << std::endl;
+    return os;
+}
 
 void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Square>& squares) {
     std::ifstream file;
@@ -28,6 +39,12 @@ void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Squa
         case PrimitiveType::Square:
         {
             auto details = shape["details"].get<lb::Square>();
+
+            // convert degrees to radians for rotation
+            details.transform.rotation.x = degreesToRadians(details.transform.rotation.x);
+            details.transform.rotation.y = degreesToRadians(details.transform.rotation.y);
+            details.transform.rotation.z = degreesToRadians(details.transform.rotation.z);
+
             squares.push_back(details);
         }
         break;
