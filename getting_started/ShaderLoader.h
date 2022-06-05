@@ -7,5 +7,4 @@ class ShaderLoader {
     public:
     ShaderLoader(const char* name);
     bgfx::ShaderHandle& GetHandle();
-    ~ShaderLoader();
 };

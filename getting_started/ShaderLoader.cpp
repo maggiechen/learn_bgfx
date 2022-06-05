@@ -27,10 +27,6 @@ ShaderLoader::ShaderLoader(const char* name) {
     delete[] shaderData;
 }
 
-ShaderLoader::~ShaderLoader() {
-    bgfx::destroy(m_handle);
-}
-
 bgfx::ShaderHandle& ShaderLoader::GetHandle() {
     return m_handle;
 }
