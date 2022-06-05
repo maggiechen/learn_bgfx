@@ -25,7 +25,7 @@ public:
     int Run(const char* configFile);
     ~LearnBgfx();
 private:
-
+    static bool s_quit;
     static constexpr int kWidth = 640;
     static constexpr int kHeight = 480;
 
@@ -36,6 +36,7 @@ private:
     bgfx::IndexBufferHandle m_ibh;
     bgfx::ProgramHandle m_program;
 private:
+    static void OnQuitInput(SDL_Event quitEvent);
     bgfx::ShaderHandle loadShader(const char* name);
     void loadConfigFile(const char* configFile, std::vector<lb::Square>& squares);
 };

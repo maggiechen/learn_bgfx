@@ -3,6 +3,7 @@
 #include "ShaderLoader.h"
 #include "SquarePrimitive.h"
 #include "Utils.h"
+#include "InputManager.h"
 #include <iostream>  // I/O for cout
 #include <fstream>   // file stream for loading shader files
 
@@ -10,17 +11,25 @@ static constexpr const float error[4]{ 1, 0, 1, 1 };
 static constexpr const float white[4]{ 1, 1, 1, 1 };
 static constexpr const float red[4]{ 1, 0, 0, 1 };
 
+bool LearnBgfx::s_quit = false;
+
 // TODO: This doesn't raise any errors even if I don't free this memory. Need to get valgrind or something to verify
 // this isn't leaking
 LearnBgfx::~LearnBgfx() {
     bgfx::destroy(u_color);
 }
 
+void LearnBgfx::OnQuitInput(SDL_Event quitEvent) {
+    s_quit = true;
+}
+
 int LearnBgfx::Run(const char* configFile) {
     std::vector<lb::Square> squares;
     GeometryLoader loader;
     loader.loadConfigFile(configFile, squares);
-
+    InputManager inputManager;
+    inputManager.RegisterInputAction(SDL_QUIT, OnQuitInput);
+    inputManager.RegisterKeyInputAction(SDLK_ESCAPE, OnQuitInput);
     SquarePrimitive square;
 
     // Initialize SDL window
@@ -103,18 +112,10 @@ int LearnBgfx::Run(const char* configFile) {
     bgfx::touch(0); // apparently this creates an empty primitive.
 
     // APPLICATION LOOP
-    bool quit = false;
     SDL_Event currentEvent;
-    while (!quit) {
+    while (!s_quit) {
         while (SDL_PollEvent(&currentEvent) != 0) {
-            switch (currentEvent.type) {
-            case SDL_QUIT:
-                quit = true;
-            case SDL_KEYDOWN:
-                if (currentEvent.key.keysym.sym == SDLK_ESCAPE) {
-                    quit = true;
-                }
-            }
+            inputManager.ProcessInput(currentEvent);
         }
         // set up camera
         const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
