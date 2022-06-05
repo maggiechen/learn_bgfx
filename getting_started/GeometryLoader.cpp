@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& os, const lb::Transform& t) {
     return os;
 }
 
-void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Square>& squares) {
+void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Square>& squares, float& cameraSpeed, bool& hasCameraSpeed) {
     std::ifstream file;
     file.open(configFile);
     if (!file.is_open()) {
@@ -25,6 +25,11 @@ void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Squa
     }
     json j;
     file >> j;
+    if (j.find("cameraSpeed") != j.end()) {
+        cameraSpeed = j["cameraSpeed"];
+        hasCameraSpeed = true;
+    }
+
     if (j.find("shapes") == j.end()) {
         LOG("You have no shapes defined in the config file");
         return;

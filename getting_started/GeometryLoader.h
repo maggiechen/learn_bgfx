@@ -39,5 +39,5 @@ std::ostream& operator<<(std::ostream& os, const lb::Transform& t);
 class GeometryLoader {
     static const std::unordered_map<std::string, PrimitiveType> s_primitiveTypes;
 public:
-    void loadConfigFile(const char* configFile, std::vector<lb::Square>& squares);
+    void loadConfigFile(const char* configFile, std::vector<lb::Square>& squares, float& cameraSpeed, bool& hasCameraSpeed);
 };

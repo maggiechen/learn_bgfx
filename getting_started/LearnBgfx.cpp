@@ -12,7 +12,7 @@ static constexpr const float white[4]{ 1, 1, 1, 1 };
 static constexpr const float red[4]{ 1, 0, 0, 1 };
 
 bool LearnBgfx::s_quit = false;
-
+// CameraNavigation LearnBgfx::s_cameraNavigation{};
 // TODO: This doesn't raise any errors even if I don't free this memory. Need to get valgrind or something to verify
 // this isn't leaking
 LearnBgfx::~LearnBgfx() {
@@ -25,11 +25,22 @@ void LearnBgfx::OnQuitInput(SDL_Event quitEvent) {
 
 int LearnBgfx::Run(const char* configFile) {
     std::vector<lb::Square> squares;
+    float cameraSpeed = 0.0f;
+    bool hasCameraSpeed = false;
     GeometryLoader loader;
-    loader.loadConfigFile(configFile, squares);
+    loader.loadConfigFile(configFile, squares, cameraSpeed, hasCameraSpeed);
+    if (hasCameraSpeed) {
+        CameraNavigation::SetCameraSpeed(cameraSpeed);
+    }
+
     InputManager inputManager;
     inputManager.RegisterInputAction(SDL_QUIT, OnQuitInput);
-    inputManager.RegisterKeyInputAction(SDLK_ESCAPE, OnQuitInput);
+    inputManager.RegisterKeyDownAction(SDLK_ESCAPE, OnQuitInput);
+    inputManager.RegisterKeyHoldAction(SDLK_w, CameraNavigation::MoveForward);
+    inputManager.RegisterKeyHoldAction(SDLK_s, CameraNavigation::MoveBackward);
+    inputManager.RegisterKeyHoldAction(SDLK_a, CameraNavigation::MoveLeft);
+    inputManager.RegisterKeyHoldAction(SDLK_d, CameraNavigation::MoveRight);
+    
     SquarePrimitive square;
 
     // Initialize SDL window
@@ -110,16 +121,20 @@ int LearnBgfx::Run(const char* configFile) {
     bgfx::setViewRect(0, 0, 0, uint16_t(kWidth), uint16_t(kHeight));
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
     bgfx::touch(0); // apparently this creates an empty primitive.
-
+    
+    TimerTicker::Tick(); // do this once to make sure the deltaTime is accurate
+    
     // APPLICATION LOOP
     SDL_Event currentEvent;
     while (!s_quit) {
+        TimerTicker::Tick();
         while (SDL_PollEvent(&currentEvent) != 0) {
-            inputManager.ProcessInput(currentEvent);
+            inputManager.ProcessInputAndUpdateKeyState(currentEvent);
         }
+        inputManager.ProcessFromKeyState();
         // set up camera
         const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
-        const bx::Vec3 eye = { 0.0f, 0.0f, 10.0f };
+        const bx::Vec3 eye = CameraNavigation::GetEyePos();
 
         float view[16];
         bx::mtxLookAt(view, eye, at);

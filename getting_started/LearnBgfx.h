@@ -2,9 +2,11 @@
 
 #include "PosColorVertex.h"
 #include "PrimitiveType.h"
+#include "TimerTicker.h"
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bx/math.h>   // this doesn't like being included in cpp files. Complains about some BX_CONFIG_DEBUG macro not being defined
+#include "CameraNavigation.h"
 #ifdef LINUX
     #include <SDL2/SDL.h>
     #include <SDL2/SDL_syswm.h>
@@ -24,8 +26,9 @@ class LearnBgfx {
 public:
     int Run(const char* configFile);
     ~LearnBgfx();
-private:
+private:    
     static bool s_quit;
+    static TimerTicker s_timer;
     static constexpr int kWidth = 640;
     static constexpr int kHeight = 480;
 
@@ -35,7 +38,7 @@ private:
     bgfx::VertexBufferHandle m_vbh;
     bgfx::IndexBufferHandle m_ibh;
     bgfx::ProgramHandle m_program;
-private:
+
     static void OnQuitInput(SDL_Event quitEvent);
     bgfx::ShaderHandle loadShader(const char* name);
     void loadConfigFile(const char* configFile, std::vector<lb::Square>& squares);

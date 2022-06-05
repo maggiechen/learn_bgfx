@@ -23,7 +23,10 @@ SOURCES = main.cpp getting_started/LearnBgfx.cpp \
     getting_started/PosColorVertex.cpp \
     getting_started/ShaderLoader.cpp \
     getting_started/SquarePrimitive.cpp \
-    getting_started/InputManager.cpp
+    getting_started/InputManager.cpp \
+    getting_started/CameraNavigation.cpp \
+    getting_started/TimerTicker.cpp
+    
 
 
 # Where all the compiled, unlinked object files go
