@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& os, const lb::Transform& t) {
     return os;
 }
 
-void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Square>& squares, float& cameraSpeed, bool& hasCameraSpeed) {
+void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Square>& squares, float& cameraSpeed, bool& hasCameraSpeed, float& mouseSensitivity, bool& hasMouseSensitivity) {
     std::ifstream file;
     file.open(configFile);
     if (!file.is_open()) {
@@ -28,6 +28,11 @@ void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Squa
     if (j.find("cameraSpeed") != j.end()) {
         cameraSpeed = j["cameraSpeed"];
         hasCameraSpeed = true;
+    }
+
+    if (j.find("mouseSensitivity") != j.end()) {
+        mouseSensitivity = j["mouseSensitivity"];
+        hasMouseSensitivity = true;
     }
 
     if (j.find("shapes") == j.end()) {

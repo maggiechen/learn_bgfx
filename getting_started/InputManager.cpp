@@ -1,4 +1,10 @@
 #include "InputManager.h"
+#include "Utils.h"
+InputManager::InputManager() {
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_CaptureMouse(SDL_TRUE);
+    SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1", SDL_HINT_OVERRIDE);
+}
 
 void InputManager::RegisterKeyHoldAction(SDL_Keycode keyCode, KeyHoldAction action) {
     m_keyHoldActionMap[keyCode] = action;
@@ -12,6 +18,10 @@ void InputManager::RegisterInputAction(Uint32 eventType, std::function<void(SDL_
     m_inputActionMap[eventType] = action;
 }
 
+void InputManager::RegisterMouseMove(MouseMoveAction action) {
+    m_mouseMoveAction = action;
+}
+
 void InputManager::ProcessInputAndUpdateKeyState(SDL_Event& inputEvent) {
     if (inputEvent.type == SDL_KEYDOWN) {
         m_keyState[inputEvent.key.keysym.sym] = KeyState::KeyState_Pressed;
@@ -22,6 +32,13 @@ void InputManager::ProcessInputAndUpdateKeyState(SDL_Event& inputEvent) {
         return;
     } else if (inputEvent.type == SDL_KEYUP) {
         m_keyState.erase(inputEvent.key.keysym.sym);
+        return;
+    }
+
+    if (inputEvent.type == SDL_MOUSEMOTION) {
+        m_deltaMouseX = inputEvent.motion.xrel;
+        m_deltaMouseY = inputEvent.motion.yrel;
+        return;
     }
 
     std::unordered_map<Uint32, InputAction>::iterator it = m_inputActionMap.find(inputEvent.type);    
@@ -31,11 +48,18 @@ void InputManager::ProcessInputAndUpdateKeyState(SDL_Event& inputEvent) {
     }
 }
 
-void InputManager::ProcessFromKeyState() {
+void InputManager::ProcessFromInputState() {
     for (auto&& keyToState : m_keyState) {
         std::unordered_map<SDL_Keycode, KeyHoldAction>::iterator it = m_keyHoldActionMap.find(keyToState.first);
         if (it != m_keyHoldActionMap.end()) {
             it->second();
         }
     }
+
+    if (m_mouseMoveAction != nullptr) {
+        // LOG("mouse moving " << m_deltaMouseX << " " << m_deltaMouseY);
+        m_mouseMoveAction(m_deltaMouseX, m_deltaMouseY);
+    }
+    m_deltaMouseX = 0.0f;
+    m_deltaMouseY = 0.0f;
 }

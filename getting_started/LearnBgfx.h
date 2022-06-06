@@ -29,8 +29,8 @@ public:
 private:    
     static bool s_quit;
     static TimerTicker s_timer;
-    static constexpr int kWidth = 640;
-    static constexpr int kHeight = 480;
+    static constexpr int kWidth = 1920;
+    static constexpr int kHeight = 1080;
 
     bgfx::UniformHandle u_color;
 

@@ -6,6 +6,7 @@
 #include "InputManager.h"
 #include <iostream>  // I/O for cout
 #include <fstream>   // file stream for loading shader files
+// #include "../bgfx/examples/common/debugdraw/debugdraw.h"
 
 static constexpr const float error[4]{ 1, 0, 1, 1 };
 static constexpr const float white[4]{ 1, 1, 1, 1 };
@@ -26,9 +27,12 @@ void LearnBgfx::OnQuitInput(SDL_Event quitEvent) {
 int LearnBgfx::Run(const char* configFile) {
     std::vector<lb::Square> squares;
     float cameraSpeed = 0.0f;
+    float mouseSensitivity = 0.0f;
     bool hasCameraSpeed = false;
+    bool hasMouseSensitivity = false;
+
     GeometryLoader loader;
-    loader.loadConfigFile(configFile, squares, cameraSpeed, hasCameraSpeed);
+    loader.loadConfigFile(configFile, squares, cameraSpeed, hasCameraSpeed, mouseSensitivity, hasMouseSensitivity);
     if (hasCameraSpeed) {
         CameraNavigation::SetCameraSpeed(cameraSpeed);
     }
@@ -40,7 +44,7 @@ int LearnBgfx::Run(const char* configFile) {
     inputManager.RegisterKeyHoldAction(SDLK_s, CameraNavigation::MoveBackward);
     inputManager.RegisterKeyHoldAction(SDLK_a, CameraNavigation::MoveLeft);
     inputManager.RegisterKeyHoldAction(SDLK_d, CameraNavigation::MoveRight);
-    
+    inputManager.RegisterMouseMove(CameraNavigation::ProcessMouse);    
     SquarePrimitive square;
 
     // Initialize SDL window
@@ -83,7 +87,7 @@ int LearnBgfx::Run(const char* configFile) {
     // window is an unsigned long, so truncate it to a uintptr and cast to void* since that's what the native window handle field wants
     platformData.nwh = (void*)(uintptr_t)windowInfo.info.win.window;
 #endif
-
+	
     bgfx::setPlatformData(platformData);
     bgfx::renderFrame(); // empty frame
     bgfx::Init initParams;
@@ -131,13 +135,19 @@ int LearnBgfx::Run(const char* configFile) {
         while (SDL_PollEvent(&currentEvent) != 0) {
             inputManager.ProcessInputAndUpdateKeyState(currentEvent);
         }
-        inputManager.ProcessFromKeyState();
+        inputManager.ProcessFromInputState();
+
+        // DebugDrawEncoder dde;
+	    // dde.begin(0);
+	    // dde.drawAxis(0.0f, 0.0f, 0.0f);
+
         // set up camera
         const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = CameraNavigation::GetEyePos();
+        bx::Vec3 lookDir = CameraNavigation::GetLookDirection();
 
         float view[16];
-        bx::mtxLookAt(view, eye, at);
+        bx::mtxLookAt(view, eye, bx::add(eye, lookDir));
 
         float proj[16];
         // getCaps gets rendering capabilities. If homogeneuousDepth is true, then NDC is on [-1, 1]. Otherwise, [0, 1]

@@ -7,7 +7,7 @@
                 "color": "red",
                 "transform": {
                     "position": {"x": -3, "y": -3, "z": -2},
-                    "rotation": {"x": 45, "y": -45, "z": 0}
+                    "rotation": {"x": 0, "y": 0, "z": 0}
                 }
             }
         },
@@ -18,7 +18,7 @@
                 "color": "white",
                 "transform": {
                     "position": {"x": -1, "y": 3, "z": -1},
-                    "rotation": {"x": 0, "y": 45, "z": -45}
+                    "rotation": {"x": 0, "y": 0, "z": 0}
                 }
             }
         },
@@ -29,10 +29,11 @@
                 "color": "red",
                 "transform": {
                     "position": {"x": 0, "y": 0, "z": 0},
-                    "rotation": {"x": 0, "y": 25, "z": 170}
+                    "rotation": {"x": 0, "y": 0, "z": 0}
                 }
             }
         }
     ],
-    "cameraSpeed": 1.0
+    "cameraSpeed": 1.0,
+    "mouseSensitiivty": 0.1
 }
