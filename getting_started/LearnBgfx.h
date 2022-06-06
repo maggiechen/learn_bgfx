@@ -43,6 +43,7 @@ private:
     bgfx::ProgramHandle m_program;
 
     static void OnQuitInput(SDL_Event quitEvent);
+    static void OnEscInput();
     bgfx::ShaderHandle loadShader(const char* name);
     void loadConfigFile(const char* configFile, std::vector<lb::Square>& squares);
 };

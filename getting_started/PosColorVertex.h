@@ -6,6 +6,8 @@ struct PosColorVertex {
     float m_x;
     float m_y;
     float m_z;
+    float m_u;
+    float m_v;
 
     // declare variable representing the vertex layout
     // the tutorial used VertexDecl, but that was renamed to VertexLayout

@@ -12,7 +12,9 @@
 #include <functional>
 #include <unordered_map>
 using InputAction = std::function<void(SDL_Event)>;
+using KeyDownAction = std::function<void()>;
 using KeyHoldAction = std::function<void()>;
+using KeyUpAction = std::function<void()>;
 using MouseMoveAction = std::function<void(int, int)>;
 enum class KeyState {
     KeyState_Pressed,
@@ -29,16 +31,20 @@ private:
     // CALLBACKS
     MouseMoveAction m_mouseMoveAction;
     std::unordered_map<Uint32, InputAction> m_inputActionMap;
-    std::unordered_map<SDL_Keycode, InputAction> m_keyDownActionMap;
+    std::unordered_map<SDL_Keycode, KeyDownAction> m_keyDownActionMap;
     std::unordered_map<SDL_Keycode, KeyHoldAction> m_keyHoldActionMap;
+    std::unordered_map<SDL_Keycode, KeyUpAction> m_keyUpActionMap;
 public:
     InputManager();
+
+    /// @brief When this key is pressed down, call this action
+    void RegisterKeyDownAction(SDL_Keycode keyCode, KeyDownAction action);
 
     /// @brief When this key is pressed, call this action
     void RegisterKeyHoldAction(SDL_Keycode keyCode, KeyHoldAction action);
 
-    /// @brief When this key is pressed down, call this action
-    void RegisterKeyDownAction(SDL_Keycode keyCode, InputAction action);
+    /// @brief When this key is released, call this action
+    void RegisterKeyUpAction(SDL_Keycode keyCode, KeyUpAction action);
 
     /// @brief When this event (e.g. quit event) occurs, call this action
     void RegisterInputAction(Uint32 eventType, InputAction action);

@@ -14,37 +14,37 @@ SquarePrimitive::SquarePrimitive() {
     indexData = new uint16_t[indexCount];
 
     // positive x face
-    vertexData[0] = { 1, -1, -1 };
-    vertexData[1] = { 1, -1, 1 };
-    vertexData[2] = { 1, 1, 1 };
-    vertexData[3] = { 1, 1, -1 };
+    vertexData[0] =     {  1, -1, -1, 0, 0 };
+    vertexData[1] =     {  1, -1,  1, 1, 0 };
+    vertexData[2] =     {  1,  1,  1, 1, 1 };
+    vertexData[3] =     {  1,  1, -1, 0, 1 };
     // -ve
-    vertexData[4] = { -1, -1, -1 };
-    vertexData[5] = { -1, -1, 1 };
-    vertexData[6] = { -1, 1, 1 };
-    vertexData[7] = { -1, 1, -1 };
+    vertexData[4] =     { -1, -1, -1, 0, 0 };
+    vertexData[5] =     { -1,  1, -1, 1, 0 };
+    vertexData[6] =     { -1,  1,  1, 1, 0 };
+    vertexData[7] =     { -1, -1,  1, 0, 1 };
 
     // positive y face
-    vertexData[8] = { -1, 1,  -1 };
-    vertexData[9] = { -1, 1,  1 };
-    vertexData[10] = { 1, 1, 1 };
-    vertexData[11] = { 1, 1, -1 };
+    vertexData[8] =     { -1,  1, -1, 0, 0 };
+    vertexData[9] =     {  1,  1, -1, 1, 0 };
+    vertexData[10] =    {  1,  1,  1, 1, 1 };
+    vertexData[11] =    { -1,  1,  1, 0, 1 };
     // -ve
-    vertexData[12] = { -1, -1,  -1 };
-    vertexData[13] = { -1, -1,  1 };
-    vertexData[14] = { 1, -1, 1 };
-    vertexData[15] = { 1, -1, -1 };
+    vertexData[12] =    { -1, -1, -1, 0, 0 };
+    vertexData[13] =    { -1, -1,  1, 1, 0 };
+    vertexData[14] =    {  1, -1,  1, 1, 1 };
+    vertexData[15] =    {  1, -1, -1, 0, 1 };
 
     // positive z face
-    vertexData[16] = { -1,  -1, 1 };
-    vertexData[17] = { -1,  1, 1 };
-    vertexData[18] = { 1, 1, 1 };
-    vertexData[19] = { 1, -1, 1 };
+    vertexData[16] =    { -1, -1,  1, 0, 0 };
+    vertexData[17] =    { -1,  1,  1, 1, 0 };
+    vertexData[18] =    {  1,  1,  1, 1, 1 };
+    vertexData[19] =    {  1, -1,  1, 0, 1 };
     // -ve
-    vertexData[20] = { -1,  -1, -1 };
-    vertexData[21] = { -1,  1, -1 };
-    vertexData[22] = { 1, 1, -1 };
-    vertexData[23] = { 1, -1, -1 };
+    vertexData[20] =    { -1, -1, -1, 0, 0 };
+    vertexData[21] =    {  1, -1, -1, 1, 0 };
+    vertexData[22] =    {  1,  1, -1, 1, 1 };
+    vertexData[23] =    { -1,  1, -1, 0, 1 };
 
     for (int i = 0; i < 6; ++i) {
         int firstVertex = i * verticesPerFace;

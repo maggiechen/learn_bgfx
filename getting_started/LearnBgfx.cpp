@@ -23,6 +23,10 @@ void LearnBgfx::OnQuitInput(SDL_Event quitEvent) {
     s_quit = true;
 }
 
+void LearnBgfx::OnEscInput() {
+    s_quit = true;
+}
+
 int LearnBgfx::Run(const char* configFile) {
     std::vector<lb::Square> squares;
     float cameraSpeed = 0.0f;
@@ -42,12 +46,19 @@ int LearnBgfx::Run(const char* configFile) {
     // Map input keys/mouse/etc to actions in the application
     {
         inputManager.RegisterInputAction(SDL_QUIT, OnQuitInput);
-        inputManager.RegisterKeyDownAction(SDLK_ESCAPE, OnQuitInput);
+        inputManager.RegisterKeyDownAction(SDLK_ESCAPE, OnEscInput);
         inputManager.RegisterKeyHoldAction(SDLK_w, CameraNavigation::MoveForward);
         inputManager.RegisterKeyHoldAction(SDLK_s, CameraNavigation::MoveBackward);
         inputManager.RegisterKeyHoldAction(SDLK_a, CameraNavigation::MoveLeft);
         inputManager.RegisterKeyHoldAction(SDLK_d, CameraNavigation::MoveRight);
-        inputManager.RegisterMouseMove(CameraNavigation::ProcessMouse);    
+
+        inputManager.RegisterKeyDownAction(SDLK_KP_7, CameraNavigation::SetTopView);
+        inputManager.RegisterKeyDownAction(SDLK_KP_1, CameraNavigation::SetFrontView);
+        inputManager.RegisterKeyDownAction(SDLK_KP_3, CameraNavigation::SetRightView);
+        inputManager.RegisterKeyDownAction(SDLK_LCTRL, CameraNavigation::InvertQuickView);
+        inputManager.RegisterKeyUpAction(SDLK_LCTRL, CameraNavigation::DoNotInvertQuickView);
+
+        inputManager.RegisterMouseMove(CameraNavigation::ProcessMouse);
     }
 
     // Initialize SDL window
