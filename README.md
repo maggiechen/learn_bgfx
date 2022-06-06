@@ -12,6 +12,9 @@ glxgears
 ```
 And check that the gears turn at a decently quick pace. 
 
+## Running examples
+Watch: https://www.youtube.com/watch?v=oUQJm755GwY
+
 ### Recommended MobaXTerm settings
 **Disable remote access to prevent malicious clients from connecting.** I received connection requests from unknown IP addresses during development, and a quick search showed the source was a malicious client that had been spamming random victims' ports over the past week.
 
@@ -109,3 +112,4 @@ It complains if you're not in the ~/home directory. So create symlink and start 
 `ln -s /mnt/c/dev/learn_bgfx ~/home/learn_bgfx`
 
 You might have to create the ~/home folder.
+

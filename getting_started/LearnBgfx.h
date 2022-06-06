@@ -6,6 +6,8 @@
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bx/math.h>   // this doesn't like being included in cpp files. Complains about some BX_CONFIG_DEBUG macro not being defined
+#include <debugdraw/debugdraw.h> // putting this in cpp file seems to give me "expected unqualified-id before numeric constant" a lot. Not sure why
+
 #include "CameraNavigation.h"
 #ifdef LINUX
     #include <SDL2/SDL.h>

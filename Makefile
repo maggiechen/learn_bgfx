@@ -26,7 +26,6 @@ SOURCES = main.cpp getting_started/LearnBgfx.cpp \
     getting_started/InputManager.cpp \
     getting_started/CameraNavigation.cpp \
     getting_started/TimerTicker.cpp
-    
 
 
 # Where all the compiled, unlinked object files go
@@ -41,14 +40,34 @@ OBJECTS := $(addprefix $(BIN)/, $(SOURCES:.cpp=.o))
 # EXECUTABLE = $(BIN)/exec
 
 # LINKER_FLAGS_* specifies the libraries we're linking against
-# Note that we add SDL2 and also the shared release bgfx library. The .so extension means it's a shared library
-BGFX_DEBUG = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so
-BGFX_RELEASE = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so
-LINKER_FLAGS_DEBUG = $(BGFX_DEBUG) -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
-LINKER_FLAGS_RELEASE = $(BGFX_RELEASE) -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
+# The .so extension means it's a shared library
+BGFX_SHARED_DEBUG = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so
+BGFX_SHARED_RELEASE = bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so
+
+BGFX_EXAMPLE_COMMON_DEBUG = bgfx/.build/linux64_gcc/bin/libexample-commonDebug.a
+BGFX_EXAMPLE_COMMON_RELEASE = bgfx/.build/linux64_gcc/bin/libexample-commonRelease.a
+
+BGFX_EXAMPLE_GLUE_RELEASE = bgfx/.build/linux64_gcc/bin/libexample-glueRelease.a
+BGFX_EXAMPLE_GLUE_DEBUG = bgfx/.build/linux64_gcc/bin/libexample-glueDebug.a
+
+BGFX_LIB_RELEASE = bgfx/.build/linux64_gcc/bin/libbgfxRelease.a
+BGFX_LIB_DEBUG = bgfx/.build/linux64_gcc/bin/libbgfxDebug.a
+
+BIMG_DECODE_RELEASE = bgfx/.build/linux64_gcc/bin/libbimg_decodeRelease.a
+BIMG_DECODE_DEBUG = bgfx/.build/linux64_gcc/bin/libbimg_decodeDebug.a
+
+BIMG_RELEASE = bgfx/.build/linux64_gcc/bin/libbimgRelease.a
+BIMG_DEBUG = bgfx/.build/linux64_gcc/bin/libbimgDebug.a
+
+BX_RELEASE = bgfx/.build/linux64_gcc/bin/libbxRelease.a
+BX_DEBUG = bgfx/.build/linux64_gcc/bin/libbxDebug.a
+
+# Note that we add SDL2
+LINKER_FLAGS_DEBUG = $(BGFX_LIB_DEBUG) $(BGFX_EXAMPLE_GLUE_DEBUG) $(BIMG_DECODE_DEBUG) $(BIMG_DEBUG) $(BX_DEBUG) $(BGFX_EXAMPLE_COMMON_DEBUG) -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
+LINKER_FLAGS_RELEASE = $(BGFX_LIB_RELEASE) $(BGFX_EXAMPLE_GLUE_RELEASE) $(BIMG_DECODE_RELEASE) $(BIMG_RELEASE) $(BX_RELEASE) $(BGFX_EXAMPLE_COMMON_RELEASE)  -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
 
 # BGFX headers
-BGFX_HEADERS = -Ibgfx/include -Ibx/include -Ibimg/include
+BGFX_HEADERS = -Ibgfx/include -Ibx/include -Ibimg/include -Ibgfx/examples/common
 
 JSON_LIBRARY_HEADER = -Ijson/
 
@@ -71,9 +90,9 @@ dir_guard:
 # Link .o files into executable located at bin/main. Overwrite existing executable if necessary. Requires that objects have been compiled already
 $(EXECUTABLE): $(OBJECTS)
 ifeq ($(ARGS),debug)
-	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_DEBUG) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
+	$(CC) $(OBJECTS) bgfx/.build/linux64_gcc/obj/x64/Debug/example-common/examples/common/debugdraw/debugdraw.o -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_DEBUG) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
 else
-	$(CC) $(OBJECTS) -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_RELEASE) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
+	$(CC) $(OBJECTS) bgfx/.build/linux64_gcc/obj/x64/Release/example-common/examples/common/debugdraw/debugdraw.o -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_RELEASE) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
 endif
 
 # Requires that executable task has completed, logs a message in console saying it's done.

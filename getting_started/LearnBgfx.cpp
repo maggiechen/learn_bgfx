@@ -6,7 +6,6 @@
 #include "InputManager.h"
 #include <iostream>  // I/O for cout
 #include <fstream>   // file stream for loading shader files
-// #include "../bgfx/examples/common/debugdraw/debugdraw.h"
 
 static constexpr const float error[4]{ 1, 0, 1, 1 };
 static constexpr const float white[4]{ 1, 1, 1, 1 };
@@ -127,7 +126,7 @@ int LearnBgfx::Run(const char* configFile) {
     bgfx::touch(0); // apparently this creates an empty primitive.
     
     TimerTicker::Tick(); // do this once to make sure the deltaTime is accurate
-    
+    ddInit();
     // APPLICATION LOOP
     SDL_Event currentEvent;
     while (!s_quit) {
@@ -137,10 +136,10 @@ int LearnBgfx::Run(const char* configFile) {
         }
         inputManager.ProcessFromInputState();
 
-        // DebugDrawEncoder dde;
-	    // dde.begin(0);
-	    // dde.drawAxis(0.0f, 0.0f, 0.0f);
-
+        DebugDrawEncoder dde;
+	    dde.begin(0);
+	    dde.drawAxis(0.0f, 0.0f, 0.0f, 12.0f);
+        dde.end();
         // set up camera
         const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = CameraNavigation::GetEyePos();
@@ -185,6 +184,7 @@ int LearnBgfx::Run(const char* configFile) {
     }
 
     // clean up
+    ddShutdown();
     SDL_DestroyWindow(m_window);
     bgfx::shutdown();
     SDL_Quit();
