@@ -35,5 +35,6 @@
         }
     ],
     "cameraSpeed": 1.0,
-    "mouseSensitiivty": 0.5
+    "mouseSensitiivty": 0.5,
+    "zoomSensitivity": 2
 }

@@ -3,6 +3,7 @@
 
 float CameraNavigation::s_cameraSpeed = 0.2f;
 float CameraNavigation::s_mouseSensitivity = 0.1f;
+float CameraNavigation::s_zoomSensitivity = 0.05f;
 float CameraNavigation::s_yaw = -90.0f;
 float CameraNavigation::s_pitch = 0.0f;
 bx::Vec3 CameraNavigation::s_eyePos = { 0.0f, 0.0f, 10.0f };
@@ -45,7 +46,7 @@ float CameraNavigation::GetFocalDistance() {
     return bx::length(bx::sub(s_eyePos, s_focus));
 }
 
-void CameraNavigation::ProcessMouse(int deltaX, int deltaY) {
+void CameraNavigation::Pan(int deltaX, int deltaY) {
     if (first) {
         first = false;
         deltaX = 0;
@@ -54,6 +55,10 @@ void CameraNavigation::ProcessMouse(int deltaX, int deltaY) {
     s_yaw += s_mouseSensitivity * deltaX;
     s_pitch += s_mouseSensitivity * deltaY;
     UpdateLookDirection();
+}
+
+void CameraNavigation::Zoom(int zoomAmount) {
+    s_eyePos = bx::add(s_eyePos, bx::mul(s_lookDirection, zoomAmount * s_zoomSensitivity));
 }
 
 void CameraNavigation::SetTopView() {
@@ -140,4 +145,8 @@ void CameraNavigation::SetCameraSpeed(float newSpeed) {
 
 void CameraNavigation::SetMouseSensitivity(float newSensitivity) {
     s_mouseSensitivity = newSensitivity;
+}
+
+void CameraNavigation::SetZoomSensitivity(float newSensitivity) {
+    s_zoomSensitivity = newSensitivity;
 }

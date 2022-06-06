@@ -16,6 +16,7 @@ using KeyDownAction = std::function<void()>;
 using KeyHoldAction = std::function<void()>;
 using KeyUpAction = std::function<void()>;
 using MouseMoveAction = std::function<void(int, int)>;
+using MouseScrollAction = std::function<void(int)>;
 enum class KeyState {
     KeyState_Pressed,
     KeyState_Released
@@ -27,9 +28,10 @@ private:
     std::unordered_map<SDL_Keycode, KeyState> m_keyState;
     int m_deltaMouseX;
     int m_deltaMouseY;
-
+    int m_deltaScrollY;
     // CALLBACKS
     MouseMoveAction m_mouseMoveAction;
+    MouseScrollAction m_mouseScrollAction;
     std::unordered_map<Uint32, InputAction> m_inputActionMap;
     std::unordered_map<SDL_Keycode, KeyDownAction> m_keyDownActionMap;
     std::unordered_map<SDL_Keycode, KeyHoldAction> m_keyHoldActionMap;
@@ -51,6 +53,9 @@ public:
 
     /// @brief Call this action when the mouse moves
     void RegisterMouseMove(MouseMoveAction action);
+
+    /// @brief Call this action when the mouse wheel is scrolled
+    void RegisterMouseScroll(MouseScrollAction action);
 
     /// @brief Process any input that can immediately be delegated to callbacks, and update the internal state of keys pressed. 
     void ProcessInputAndUpdateKeyState(SDL_Event& inputEvent);

@@ -26,6 +26,10 @@ void InputManager::RegisterMouseMove(MouseMoveAction action) {
     m_mouseMoveAction = action;
 }
 
+void InputManager::RegisterMouseScroll(MouseScrollAction action) {
+    m_mouseScrollAction = action;
+}
+
 void InputManager::ProcessInputAndUpdateKeyState(SDL_Event& inputEvent) {
     if (inputEvent.type == SDL_KEYDOWN) {
         m_keyState[inputEvent.key.keysym.sym] = KeyState::KeyState_Pressed;
@@ -51,6 +55,11 @@ void InputManager::ProcessInputAndUpdateKeyState(SDL_Event& inputEvent) {
         return;
     }
 
+    if (inputEvent.type == SDL_MOUSEWHEEL) {
+        m_deltaScrollY = inputEvent.wheel.y;
+        return;
+    }
+
     std::unordered_map<Uint32, InputAction>::iterator it = m_inputActionMap.find(inputEvent.type);    
     if (it != m_inputActionMap.end()) {
         it->second(inputEvent);
@@ -59,17 +68,25 @@ void InputManager::ProcessInputAndUpdateKeyState(SDL_Event& inputEvent) {
 }
 
 void InputManager::ProcessFromInputState() {
+    if (m_deltaMouseX != 0 || m_deltaMouseY != 0) {
+        if (m_mouseMoveAction != nullptr) {
+            m_mouseMoveAction(m_deltaMouseX, m_deltaMouseY);
+        }
+        m_deltaMouseX = 0;
+        m_deltaMouseY = 0;
+    }
+
+    if (m_deltaScrollY != 0) {
+        if (m_mouseScrollAction != nullptr) {
+            m_mouseScrollAction(m_deltaScrollY);
+        }
+        m_deltaScrollY = 0;
+    }
+
     for (auto&& keyToState : m_keyState) {
         std::unordered_map<SDL_Keycode, KeyHoldAction>::iterator it = m_keyHoldActionMap.find(keyToState.first);
         if (it != m_keyHoldActionMap.end()) {
             it->second();
         }
     }
-
-    if (m_mouseMoveAction != nullptr) {
-        // LOG("mouse moving " << m_deltaMouseX << " " << m_deltaMouseY);
-        m_mouseMoveAction(m_deltaMouseX, m_deltaMouseY);
-    }
-    m_deltaMouseX = 0.0f;
-    m_deltaMouseY = 0.0f;
 }

@@ -31,13 +31,22 @@ int LearnBgfx::Run(const char* configFile) {
     std::vector<lb::Square> squares;
     float cameraSpeed = 0.0f;
     float mouseSensitivity = 0.0f;
+    float zoomSensitivity = 0.0f;
     bool hasCameraSpeed = false;
     bool hasMouseSensitivity = false;
-
+    bool hasZoomSensitivity = false;    
     GeometryLoader loader;
-    loader.loadConfigFile(configFile, squares, cameraSpeed, hasCameraSpeed, mouseSensitivity, hasMouseSensitivity);
+    loader.loadConfigFile(configFile, squares, cameraSpeed, hasCameraSpeed, mouseSensitivity, hasMouseSensitivity, zoomSensitivity, hasZoomSensitivity);
     if (hasCameraSpeed) {
         CameraNavigation::SetCameraSpeed(cameraSpeed);
+    }
+
+    if (hasMouseSensitivity) {
+        CameraNavigation::SetMouseSensitivity(mouseSensitivity);
+    }
+
+    if (hasZoomSensitivity) {
+        CameraNavigation::SetZoomSensitivity(zoomSensitivity);
     }
 
     SquarePrimitive square;
@@ -58,7 +67,8 @@ int LearnBgfx::Run(const char* configFile) {
         inputManager.RegisterKeyDownAction(SDLK_LCTRL, CameraNavigation::InvertQuickView);
         inputManager.RegisterKeyUpAction(SDLK_LCTRL, CameraNavigation::DoNotInvertQuickView);
 
-        inputManager.RegisterMouseMove(CameraNavigation::ProcessMouse);
+        inputManager.RegisterMouseMove(CameraNavigation::Pan);
+        inputManager.RegisterMouseScroll(CameraNavigation::Zoom);
     }
 
     // Initialize SDL window

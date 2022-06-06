@@ -5,6 +5,7 @@ class CameraNavigation {
 private:
     static float s_cameraSpeed;
     static float s_mouseSensitivity;
+    static float s_zoomSensitivity;
     static bx::Vec3 s_focus;
     static bx::Vec3 s_eyePos;
     static bx::Vec3 s_up;
@@ -26,8 +27,8 @@ public:
     static void MoveBackward();
     static void MoveLeft();
     static void MoveRight();
-    static void ProcessMouse(int deltaX, int deltaY);
-
+    static void Pan(int deltaX, int deltaY);
+    static void Zoom(int zoomAmount);
     // QuickView
     static void SetTopView(); // down from Y axis
     static void SetFrontView(); // forward from Z axis
@@ -46,4 +47,7 @@ public:
 
     /// @brief Change the speed at which the player turns when moving the mouse
     static void SetMouseSensitivity(float newSensitivity);
+
+    /// @brief Change the speed at which the camera zooms when scrolling the mouse
+    static void SetZoomSensitivity(float newSensitivity);
 };
