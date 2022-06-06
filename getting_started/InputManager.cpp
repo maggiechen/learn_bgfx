@@ -36,8 +36,10 @@ void InputManager::ProcessInputAndUpdateKeyState(SDL_Event& inputEvent) {
     }
 
     if (inputEvent.type == SDL_MOUSEMOTION) {
-        m_deltaMouseX = inputEvent.motion.xrel;
-        m_deltaMouseY = inputEvent.motion.yrel;
+        // Because one tick may receive multiple mouse motion events, we need to store the cumulative deltas of the mouse position
+        // so that the mouse move callback will receive the correct aggregate values.
+        m_deltaMouseX += inputEvent.motion.xrel;
+        m_deltaMouseY += inputEvent.motion.yrel;
         return;
     }
 
