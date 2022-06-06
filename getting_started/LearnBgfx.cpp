@@ -36,15 +36,19 @@ int LearnBgfx::Run(const char* configFile) {
         CameraNavigation::SetCameraSpeed(cameraSpeed);
     }
 
-    InputManager inputManager;
-    inputManager.RegisterInputAction(SDL_QUIT, OnQuitInput);
-    inputManager.RegisterKeyDownAction(SDLK_ESCAPE, OnQuitInput);
-    inputManager.RegisterKeyHoldAction(SDLK_w, CameraNavigation::MoveForward);
-    inputManager.RegisterKeyHoldAction(SDLK_s, CameraNavigation::MoveBackward);
-    inputManager.RegisterKeyHoldAction(SDLK_a, CameraNavigation::MoveLeft);
-    inputManager.RegisterKeyHoldAction(SDLK_d, CameraNavigation::MoveRight);
-    inputManager.RegisterMouseMove(CameraNavigation::ProcessMouse);    
     SquarePrimitive square;
+    InputManager inputManager;
+
+    // Map input keys/mouse/etc to actions in the application
+    {
+        inputManager.RegisterInputAction(SDL_QUIT, OnQuitInput);
+        inputManager.RegisterKeyDownAction(SDLK_ESCAPE, OnQuitInput);
+        inputManager.RegisterKeyHoldAction(SDLK_w, CameraNavigation::MoveForward);
+        inputManager.RegisterKeyHoldAction(SDLK_s, CameraNavigation::MoveBackward);
+        inputManager.RegisterKeyHoldAction(SDLK_a, CameraNavigation::MoveLeft);
+        inputManager.RegisterKeyHoldAction(SDLK_d, CameraNavigation::MoveRight);
+        inputManager.RegisterMouseMove(CameraNavigation::ProcessMouse);    
+    }
 
     // Initialize SDL window
     {
@@ -92,7 +96,14 @@ int LearnBgfx::Run(const char* configFile) {
     bgfx::Init initParams;
     initParams.type = bgfx::RendererType::OpenGL;
     bgfx::init(initParams);
-    bgfx::setDebug(BGFX_DEBUG_NONE);
+    bgfx::reset(kWidth, kHeight, BGFX_RESET_VSYNC);
+    bgfx::setDebug(BGFX_DEBUG_TEXT);
+    bgfx::setViewRect(0, 0, 0, uint16_t(kWidth), uint16_t(kHeight));
+    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
+    bgfx::touch(0); // apparently this creates an empty primitive.
+    
+    TimerTicker::Tick(); // do this once to make sure the deltaTime is accurate
+    ddInit();
 
     u_color = bgfx::createUniform("u_color", bgfx::UniformType::Vec4);
 
@@ -119,14 +130,6 @@ int LearnBgfx::Run(const char* configFile) {
     }
     m_program = bgfx::createProgram(vsh, fsh, true); // true to destroy shaders when program is destroyed
 
-    bgfx::reset(kWidth, kHeight, BGFX_RESET_VSYNC);
-    bgfx::setDebug(BGFX_DEBUG_TEXT);
-    bgfx::setViewRect(0, 0, 0, uint16_t(kWidth), uint16_t(kHeight));
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-    bgfx::touch(0); // apparently this creates an empty primitive.
-    
-    TimerTicker::Tick(); // do this once to make sure the deltaTime is accurate
-    ddInit();
     // APPLICATION LOOP
     SDL_Event currentEvent;
     while (!s_quit) {
@@ -136,10 +139,12 @@ int LearnBgfx::Run(const char* configFile) {
         }
         inputManager.ProcessFromInputState();
 
+        // Draw x/y/z axes
         DebugDrawEncoder dde;
 	    dde.begin(0);
 	    dde.drawAxis(0.0f, 0.0f, 0.0f, 12.0f);
         dde.end();
+
         // set up camera
         const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = CameraNavigation::GetEyePos();
