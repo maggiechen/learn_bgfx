@@ -15,7 +15,7 @@ CC = g++
 # -w suppresses all warnings
 # define BX_CONFIG_DEBUG as it's a macro required to include bx/math.h
 # define we're using linux. There's some conditional includes in the project. Specifically the Nuget package for SDL2 uses "SDL/" but the apt package we use on Ubuntu is "SDL2/"
-COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG -DLINUX -std=c++11
+COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG -DLINUX -std=c++17
 
 # Source files
 SOURCES = main.cpp getting_started/LearnBgfx.cpp \

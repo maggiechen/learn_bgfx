@@ -31,6 +31,7 @@ public:
 private:    
     static bool s_quit;
     static TimerTicker s_timer;
+    static constexpr const bx::Vec3 s_origin = { 0.0f, 0.0f, 0.0f };
     static constexpr int kWidth = 1920;
     static constexpr int kHeight = 1080;
 

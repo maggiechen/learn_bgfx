@@ -143,10 +143,10 @@ int LearnBgfx::Run(const char* configFile) {
         DebugDrawEncoder dde;
 	    dde.begin(0);
 	    dde.drawAxis(0.0f, 0.0f, 0.0f, 12.0f);
+        dde.drawGrid(Axis::Y, s_origin);
         dde.end();
 
         // set up camera
-        const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = CameraNavigation::GetEyePos();
         bx::Vec3 lookDir = CameraNavigation::GetLookDirection();
 
