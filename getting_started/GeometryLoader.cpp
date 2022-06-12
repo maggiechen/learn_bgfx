@@ -4,10 +4,19 @@
 #include <fstream>
 #include <vector>
 #include <math.h>
-const std::unordered_map<std::string, PrimitiveType> GeometryLoader::s_primitiveTypes = { {"square", PrimitiveType::Square} };
+const std::unordered_map<std::string, PrimitiveType> GeometryLoader::s_primitiveTypes = {
+    {"square", PrimitiveType::Square},
+    {"plane", PrimitiveType::Plane}
+};
 
 float degreesToRadians(float degrees) {
     return degrees * M_PI / (float)180;
+}
+
+void convertRotationFromDegreesToRadians(lb::Transform transform) {
+    transform.rotation.x = degreesToRadians(transform.rotation.x);
+    transform.rotation.y = degreesToRadians(transform.rotation.y);
+    transform.rotation.z = degreesToRadians(transform.rotation.z);
 }
 
 std::ostream& operator<<(std::ostream& os, const lb::Transform& t) {
@@ -16,7 +25,9 @@ std::ostream& operator<<(std::ostream& os, const lb::Transform& t) {
     return os;
 }
 
-void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Square>& squares,
+void GeometryLoader::loadConfigFile(const char* configFile,
+                                    std::vector<lb::Square>& squares,
+                                    std::vector<lb::Plane>& planes,
                                     float& cameraSpeed, bool& hasCameraSpeed,
                                     float& mouseSensitivity, bool& hasMouseSensitivity,
                                     float& zoomSensitivity, bool& hasZoomSensitivity) {
@@ -53,17 +64,24 @@ void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Squa
 
     for (json shape : shapes) {
         auto primitive = shape["primitive"].get<std::string>();
-        switch (s_primitiveTypes.find(primitive)->second) {
+        auto it = s_primitiveTypes.find(primitive);
+        if (it == s_primitiveTypes.end()) {
+            continue;;
+        }
+        switch (it->second) {
         case PrimitiveType::Square:
         {
             auto details = shape["details"].get<lb::Square>();
-
             // convert degrees to radians for rotation
-            details.transform.rotation.x = degreesToRadians(details.transform.rotation.x);
-            details.transform.rotation.y = degreesToRadians(details.transform.rotation.y);
-            details.transform.rotation.z = degreesToRadians(details.transform.rotation.z);
-
+            convertRotationFromDegreesToRadians(details.transform);
             squares.push_back(details);
+        }
+        break;
+        case PrimitiveType::Plane:
+        {
+            auto details = shape["details"].get<lb::Plane>();
+            convertRotationFromDegreesToRadians(details.transform);
+            planes.push_back(details);
         }
         break;
         default:
@@ -72,8 +90,5 @@ void GeometryLoader::loadConfigFile(const char* configFile, std::vector<lb::Squa
     }
 
     LOG("Squares loaded:" << squares.size());
-
-    if (squares.size() <= 0) {
-        return;
-    }
+    LOG("Planes loaded:" << planes.size());
 }

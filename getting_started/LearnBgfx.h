@@ -38,13 +38,18 @@ private:
     bgfx::UniformHandle u_color;
 
     SDL_Window* m_window = NULL;
-    bgfx::VertexBufferHandle m_vbh;
-    bgfx::IndexBufferHandle m_ibh;
+    bgfx::VertexBufferHandle m_squareVbh;
+    bgfx::IndexBufferHandle m_squareIbh;
+    bgfx::VertexBufferHandle m_planeVbh;
+    bgfx::IndexBufferHandle m_planeIbh;
     bgfx::ProgramHandle m_program;
+    bgfx::ShaderHandle m_vsh;
+    bgfx::ShaderHandle m_fsh;
 
     static void OnQuitInput(SDL_Event quitEvent);
-    static void OnEscInput();
+    static void Quit();
     bgfx::ShaderHandle loadShader(const char* name);
     void loadConfigFile(const char* configFile, std::vector<lb::Square>& squares);
+    void SubmitMesh(lb::Transform transform, const char* colorString, bgfx::VertexBufferHandle& vbh, bgfx::IndexBufferHandle& ibh);
 };
 

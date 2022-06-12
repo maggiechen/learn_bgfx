@@ -1,5 +1,6 @@
 #include "GeometryLoader.h"
 #include "LearnBgfx.h"
+#include "PlanePrimitive.h"
 #include "ShaderLoader.h"
 #include "SquarePrimitive.h"
 #include "Utils.h"
@@ -16,19 +17,26 @@ bool LearnBgfx::s_quit = false;
 // TODO: This doesn't raise any errors even if I don't free this memory. Need to get valgrind or something to verify
 // this isn't leaking
 LearnBgfx::~LearnBgfx() {
+    bgfx::destroy(m_squareVbh);
+    bgfx::destroy(m_squareIbh);
+    bgfx::destroy(m_planeVbh);
+    bgfx::destroy(m_planeIbh);
+    bgfx::destroy(m_vsh);
+    bgfx::destroy(m_fsh);
     bgfx::destroy(u_color);
 }
 
 void LearnBgfx::OnQuitInput(SDL_Event quitEvent) {
-    s_quit = true;
+    Quit();
 }
 
-void LearnBgfx::OnEscInput() {
+void LearnBgfx::Quit() {
     s_quit = true;
 }
 
 int LearnBgfx::Run(const char* configFile) {
     std::vector<lb::Square> squares;
+    std::vector<lb::Plane> planes;
     float cameraSpeed = 0.0f;
     float mouseSensitivity = 0.0f;
     float zoomSensitivity = 0.0f;
@@ -36,7 +44,7 @@ int LearnBgfx::Run(const char* configFile) {
     bool hasMouseSensitivity = false;
     bool hasZoomSensitivity = false;    
     GeometryLoader loader;
-    loader.loadConfigFile(configFile, squares, cameraSpeed, hasCameraSpeed, mouseSensitivity, hasMouseSensitivity, zoomSensitivity, hasZoomSensitivity);
+    loader.loadConfigFile(configFile, squares, planes, cameraSpeed, hasCameraSpeed, mouseSensitivity, hasMouseSensitivity, zoomSensitivity, hasZoomSensitivity);
     if (hasCameraSpeed) {
         CameraNavigation::SetCameraSpeed(cameraSpeed);
     }
@@ -49,13 +57,12 @@ int LearnBgfx::Run(const char* configFile) {
         CameraNavigation::SetZoomSensitivity(zoomSensitivity);
     }
 
-    SquarePrimitive square;
     InputManager inputManager;
 
     // Map input keys/mouse/etc to actions in the application
     {
         inputManager.RegisterInputAction(SDL_QUIT, OnQuitInput);
-        inputManager.RegisterKeyDownAction(SDLK_ESCAPE, OnEscInput);
+        inputManager.RegisterKeyDownAction(SDLK_ESCAPE, Quit);
         inputManager.RegisterKeyHoldAction(SDLK_w, CameraNavigation::MoveForward);
         inputManager.RegisterKeyHoldAction(SDLK_s, CameraNavigation::MoveBackward);
         inputManager.RegisterKeyHoldAction(SDLK_a, CameraNavigation::MoveLeft);
@@ -131,25 +138,34 @@ int LearnBgfx::Run(const char* configFile) {
     // Have to initialize the vertex attributes!!!
     PosColorVertex::init();
 
-    // fill in the vertex buffer with the position+color data and inform it of the vertex layout
-    const bgfx::Memory* vertexRef = bgfx::makeRef(square.vertexData, square.vertexCount * sizeof(PosColorVertex));
-    const bgfx::Memory* indexRef = bgfx::makeRef(square.indexData, square.indexCount * sizeof(uint16_t));
-    m_vbh = bgfx::createVertexBuffer(vertexRef, PosColorVertex::ms_decl);
-    m_ibh = bgfx::createIndexBuffer(indexRef);
-
-    if (!isValid(m_vbh)) {
-        LOG("invalid vertex buffer handle");
-    }
-
     // load shaders
-    bgfx::ShaderHandle vsh, fsh;
     {
         ShaderLoader vLoader("v_simple.bin");
         ShaderLoader fLoader("f_simple.bin");
-        vsh = vLoader.GetHandle();
-        fsh = fLoader.GetHandle();
+        m_vsh = vLoader.GetHandle();
+        m_fsh = fLoader.GetHandle();
     }
-    m_program = bgfx::createProgram(vsh, fsh, true); // true to destroy shaders when program is destroyed
+    m_program = bgfx::createProgram(m_vsh, m_fsh, true); // true to destroy shaders when program is destroyed
+    // fill in the vertex buffer with the position+color data and inform it of the vertex layout    
+
+    SquarePrimitive square;
+    const bgfx::Memory* squareVertexRef = bgfx::makeRef(square.vertexData, square.vertexCount * sizeof(PosColorVertex));
+    const bgfx::Memory* squareIndexRef = bgfx::makeRef(square.indexData, square.indexCount * sizeof(uint16_t));
+    m_squareVbh = bgfx::createVertexBuffer(squareVertexRef, PosColorVertex::ms_decl);
+    m_squareIbh = bgfx::createIndexBuffer(squareIndexRef);
+
+    if (!isValid(m_squareVbh)) {
+        LOG("invalid vertex buffer handle");
+    }
+
+    PlanePrimitive plane;
+    const bgfx::Memory* planeVertexRef = bgfx::makeRef(plane.vertexData, plane.vertexCount * sizeof(PosColorVertex));
+    const bgfx::Memory* planeIndexRef = bgfx::makeRef(plane.indexData, plane.indexCount * sizeof(uint16_t));
+    m_planeVbh = bgfx::createVertexBuffer(planeVertexRef, PosColorVertex::ms_decl);
+    m_planeIbh = bgfx::createIndexBuffer(planeIndexRef);
+    if (!isValid(m_planeVbh)) {
+        LOG("invalid index buffer handle");
+    }
 
     // APPLICATION LOOP
     SDL_Event currentEvent;
@@ -165,6 +181,7 @@ int LearnBgfx::Run(const char* configFile) {
 	    dde.begin(0);
 	    dde.drawAxis(0.0f, 0.0f, 0.0f, 12.0f);
         dde.drawGrid(Axis::Y, s_origin);
+        dde.drawGrid(Axis::Z, s_origin);
         dde.end();
 
         // set up camera
@@ -183,29 +200,15 @@ int LearnBgfx::Run(const char* configFile) {
         bgfx::touch(0);
 
         for (auto&& square : squares) {
-            float halfSide = square.size / (float)2;
-            float mtx[16];
-            // creates scaled, rotated, translated matrix
-            bx::mtxSRT(mtx,
-                halfSide, halfSide, halfSide,
-                square.transform.rotation.x, square.transform.rotation.y, square.transform.rotation.z,
-                square.transform.position.x, square.transform.position.y, square.transform.position.z);
-            bgfx::setTransform(mtx);
-            bgfx::setVertexBuffer(0, m_vbh);
-            bgfx::setIndexBuffer(m_ibh);
-
-            const char* shapeColorString = square.color.c_str();
-            if (strcmp(shapeColorString, "red") == 0) {
-                bgfx::setUniform(u_color, red);
-            } else if (strcmp(shapeColorString, "white") == 0) {
-                bgfx::setUniform(u_color, white);
-            } else {
-                bgfx::setUniform(u_color, error);
-            }
-
-            bgfx::setState(BGFX_STATE_DEFAULT); // default renders triangles
-            bgfx::submit(0, m_program); // submit primitive for rendering to view 0
+            const char* colorString = square.color.c_str();
+            SubmitMesh(square.transform, colorString, m_squareVbh, m_squareIbh);
         }
+
+        for (auto&& plane : planes) {
+            const char* colorString = plane.color.c_str();
+            SubmitMesh(plane.transform, colorString, m_planeVbh, m_planeIbh);
+        }
+
         bgfx::frame();
     }
 
@@ -215,4 +218,27 @@ int LearnBgfx::Run(const char* configFile) {
     bgfx::shutdown();
     SDL_Quit();
     return 0;
+}
+
+void LearnBgfx::SubmitMesh(lb::Transform transform, const char* colorString, bgfx::VertexBufferHandle& vbh, bgfx::IndexBufferHandle& ibh) {
+    float mtx[16];
+    // creates scaled, rotated, translated matrix
+    bx::mtxSRT(mtx,
+        transform.scale.x,    transform.scale.y,    transform.scale.z,
+        transform.rotation.x, transform.rotation.y, transform.rotation.z,
+        transform.position.x, transform.position.y, transform.position.z);
+    bgfx::setTransform(mtx);
+    bgfx::setVertexBuffer(0, vbh);
+    bgfx::setIndexBuffer(ibh);
+
+    if (strcmp(colorString, "red") == 0) {
+        bgfx::setUniform(u_color, red);
+    } else if (strcmp(colorString, "white") == 0) {
+        bgfx::setUniform(u_color, white);
+    } else {
+        bgfx::setUniform(u_color, error);
+    }
+
+    bgfx::setState(BGFX_STATE_DEFAULT); // default renders triangles
+    bgfx::submit(0, m_program); // submit primitive for rendering to view 0
 }

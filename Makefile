@@ -10,7 +10,7 @@
 
 # CC specifies which compiler we're using
 CC = g++
-
+CC_DEBUG = g++ -g
 # COMPILER_FLAGS specifies the additional compilation options we're using
 # -w suppresses all warnings
 # define BX_CONFIG_DEBUG as it's a macro required to include bx/math.h
@@ -23,6 +23,7 @@ SOURCES = main.cpp getting_started/LearnBgfx.cpp \
     getting_started/PosColorVertex.cpp \
     getting_started/ShaderLoader.cpp \
     getting_started/SquarePrimitive.cpp \
+    getting_started/PlanePrimitive.cpp \
     getting_started/InputManager.cpp \
     getting_started/CameraNavigation.cpp \
     getting_started/TimerTicker.cpp
@@ -90,7 +91,7 @@ dir_guard:
 # Link .o files into executable located at bin/main. Overwrite existing executable if necessary. Requires that objects have been compiled already
 $(EXECUTABLE): $(OBJECTS)
 ifeq ($(ARGS),debug)
-	$(CC) $(OBJECTS) bgfx/.build/linux64_gcc/obj/x64/Debug/example-common/examples/common/debugdraw/debugdraw.o -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_DEBUG) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
+	$(CC_DEBUG) $(OBJECTS) bgfx/.build/linux64_gcc/obj/x64/Debug/example-common/examples/common/debugdraw/debugdraw.o -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_DEBUG) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
 else
 	$(CC) $(OBJECTS) bgfx/.build/linux64_gcc/obj/x64/Release/example-common/examples/common/debugdraw/debugdraw.o -o $(BIN_DIR)/$@ $(COMPILER_FLAGS) $(LINKER_FLAGS_RELEASE) $(BGFX_HEADERS) $(JSON_LIBRARY_HEADER)
 endif

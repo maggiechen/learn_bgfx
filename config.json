@@ -3,35 +3,53 @@
         {
             "primitive": "square",
             "details": {
-                "size": 4.0,
                 "color": "red",
                 "transform": {
                     "position": {"x": -3, "y": -3, "z": -2},
-                    "rotation": {"x": 0, "y": 0, "z": 0}
+                    "rotation": {"x": 45, "y": -45, "z": 0},
+                    "scale": {"x": 2, "y": 1, "z": 4}
                 }
             }
         },
         {
             "primitive": "square",
             "details": {
-                "size": 3.0,
                 "color": "white",
                 "transform": {
                     "position": {"x": -1, "y": 3, "z": -1},
-                    "rotation": {"x": 0, "y": 0, "z": 0}
+                    "rotation": {"x": 0, "y": 45, "z": -45},
+                    "scale": {"x": 1.5, "y": 1.5, "z": 1.5}
                 }
             }
         },
         {
             "primitive": "square",
             "details": {
-                "size": 2.0,
                 "color": "red",
                 "transform": {
                     "position": {"x": 0, "y": 0, "z": 0},
-                    "rotation": {"x": 0, "y": 0, "z": 0}
+                    "rotation": {"x": 0, "y": 25, "z": 170},
+                    "scale": {"x": 1, "y": 1, "z": 1}
                 }
             }
+        },
+        {
+            "primitive": "plane",
+            "details": {
+                "color": "white",
+                "transform": {
+                    "position": {"x": 0, "y": 0, "z": 0},
+                    "rotation": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 10, "y": 1, "z": 10}
+                }
+            }
+        }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": {"x": 0, "y": 13, "z": 5},
+            "intensity": 2
         }
     ],
     "cameraSpeed": 1.0,

@@ -46,7 +46,7 @@ SquarePrimitive::SquarePrimitive() {
     vertexData[22] =    {  1,  1, -1, 1, 1 };
     vertexData[23] =    { -1,  1, -1, 0, 1 };
 
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < facesPerSquare; ++i) {
         int firstVertex = i * verticesPerFace;
         int firstIndex = i * indicesPerFace;
         indexData[firstIndex] = firstVertex;
