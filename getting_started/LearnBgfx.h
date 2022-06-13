@@ -1,6 +1,7 @@
 #pragma once
 
-#include "PosColorVertex.h"
+#include "JsonDefinitions.h"
+#include "Vertex.h"
 #include "PrimitiveType.h"
 #include "TimerTicker.h"
 #include <bgfx/bgfx.h>
@@ -36,6 +37,9 @@ private:
     static constexpr int kHeight = 1080;
 
     bgfx::UniformHandle u_color;
+    bgfx::UniformHandle u_pointLightColor;
+    bgfx::UniformHandle u_pointLightPos;
+    bgfx::UniformHandle u_modelMatrix;
 
     SDL_Window* m_window = NULL;
     bgfx::VertexBufferHandle m_squareVbh;
@@ -50,6 +54,7 @@ private:
     static void Quit();
     bgfx::ShaderHandle loadShader(const char* name);
     void loadConfigFile(const char* configFile, std::vector<lb::Square>& squares);
+    void SetColorUniform(bgfx::UniformHandle& uniformHandle, const char* colorString);
     void SubmitMesh(lb::Transform transform, const char* colorString, bgfx::VertexBufferHandle& vbh, bgfx::IndexBufferHandle& ibh);
 };
 

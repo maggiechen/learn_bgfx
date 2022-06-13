@@ -1,8 +1,8 @@
-#include "PosColorVertex.h"
+#include "Vertex.h"
 
 class PlanePrimitive {
 public:
-    PosColorVertex* vertexData;
+    Vertex* vertexData;
     size_t vertexCount;
     uint16_t* indexData;
     size_t indexCount;

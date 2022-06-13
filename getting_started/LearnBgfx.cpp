@@ -1,4 +1,5 @@
 #include "GeometryLoader.h"
+#include "ConfigLoadResult.h"
 #include "LearnBgfx.h"
 #include "PlanePrimitive.h"
 #include "ShaderLoader.h"
@@ -11,7 +12,7 @@
 static constexpr const float error[4]{ 1, 0, 1, 1 };
 static constexpr const float white[4]{ 1, 1, 1, 1 };
 static constexpr const float red[4]{ 1, 0, 0, 1 };
-
+static float pointLightPos[4] {0, 0, 0, 1};
 bool LearnBgfx::s_quit = false;
 // CameraNavigation LearnBgfx::s_cameraNavigation{};
 // TODO: This doesn't raise any errors even if I don't free this memory. Need to get valgrind or something to verify
@@ -35,26 +36,20 @@ void LearnBgfx::Quit() {
 }
 
 int LearnBgfx::Run(const char* configFile) {
-    std::vector<lb::Square> squares;
-    std::vector<lb::Plane> planes;
-    float cameraSpeed = 0.0f;
-    float mouseSensitivity = 0.0f;
-    float zoomSensitivity = 0.0f;
-    bool hasCameraSpeed = false;
-    bool hasMouseSensitivity = false;
-    bool hasZoomSensitivity = false;    
     GeometryLoader loader;
-    loader.loadConfigFile(configFile, squares, planes, cameraSpeed, hasCameraSpeed, mouseSensitivity, hasMouseSensitivity, zoomSensitivity, hasZoomSensitivity);
-    if (hasCameraSpeed) {
-        CameraNavigation::SetCameraSpeed(cameraSpeed);
+    
+    ConfigLoadResult configLoadResult;
+    loader.loadConfigFile(configFile, configLoadResult);
+    if (configLoadResult.hasCameraSpeed) {
+        CameraNavigation::SetCameraSpeed(configLoadResult.cameraSpeed);
     }
 
-    if (hasMouseSensitivity) {
-        CameraNavigation::SetMouseSensitivity(mouseSensitivity);
+    if (configLoadResult.hasMouseSensitivity) {
+        CameraNavigation::SetMouseSensitivity(configLoadResult.mouseSensitivity);
     }
 
-    if (hasZoomSensitivity) {
-        CameraNavigation::SetZoomSensitivity(zoomSensitivity);
+    if (configLoadResult.hasZoomSensitivity) {
+        CameraNavigation::SetZoomSensitivity(configLoadResult.zoomSensitivity);
     }
 
     InputManager inputManager;
@@ -134,9 +129,11 @@ int LearnBgfx::Run(const char* configFile) {
     ddInit();
 
     u_color = bgfx::createUniform("u_color", bgfx::UniformType::Vec4);
-
+    u_pointLightColor = bgfx::createUniform("u_pointLightColor", bgfx::UniformType::Vec4);
+    u_pointLightPos = bgfx::createUniform("u_pointLightPos", bgfx::UniformType::Vec4);
+    u_modelMatrix = bgfx::createUniform("u_modelMatrix", bgfx::UniformType::Mat4);
     // Have to initialize the vertex attributes!!!
-    PosColorVertex::init();
+    Vertex::init();
 
     // load shaders
     {
@@ -149,9 +146,9 @@ int LearnBgfx::Run(const char* configFile) {
     // fill in the vertex buffer with the position+color data and inform it of the vertex layout    
 
     SquarePrimitive square;
-    const bgfx::Memory* squareVertexRef = bgfx::makeRef(square.vertexData, square.vertexCount * sizeof(PosColorVertex));
+    const bgfx::Memory* squareVertexRef = bgfx::makeRef(square.vertexData, square.vertexCount * sizeof(Vertex));
     const bgfx::Memory* squareIndexRef = bgfx::makeRef(square.indexData, square.indexCount * sizeof(uint16_t));
-    m_squareVbh = bgfx::createVertexBuffer(squareVertexRef, PosColorVertex::ms_decl);
+    m_squareVbh = bgfx::createVertexBuffer(squareVertexRef, Vertex::ms_decl);
     m_squareIbh = bgfx::createIndexBuffer(squareIndexRef);
 
     if (!isValid(m_squareVbh)) {
@@ -159,9 +156,9 @@ int LearnBgfx::Run(const char* configFile) {
     }
 
     PlanePrimitive plane;
-    const bgfx::Memory* planeVertexRef = bgfx::makeRef(plane.vertexData, plane.vertexCount * sizeof(PosColorVertex));
+    const bgfx::Memory* planeVertexRef = bgfx::makeRef(plane.vertexData, plane.vertexCount * sizeof(Vertex));
     const bgfx::Memory* planeIndexRef = bgfx::makeRef(plane.indexData, plane.indexCount * sizeof(uint16_t));
-    m_planeVbh = bgfx::createVertexBuffer(planeVertexRef, PosColorVertex::ms_decl);
+    m_planeVbh = bgfx::createVertexBuffer(planeVertexRef, Vertex::ms_decl);
     m_planeIbh = bgfx::createIndexBuffer(planeIndexRef);
     if (!isValid(m_planeVbh)) {
         LOG("invalid index buffer handle");
@@ -175,11 +172,17 @@ int LearnBgfx::Run(const char* configFile) {
             inputManager.ProcessInputAndUpdateKeyState(currentEvent);
         }
         inputManager.ProcessFromInputState();
+        // lights
+        lb::PointLight& pointLight = configLoadResult.pointLights[0];
+        pointLightPos[0] = pointLight.position.x;
+        pointLightPos[1] = pointLight.position.y;
+        pointLightPos[2] = pointLight.position.z;
 
         // Draw x/y/z axes
         DebugDrawEncoder dde;
 	    dde.begin(0);
 	    dde.drawAxis(0.0f, 0.0f, 0.0f, 12.0f);
+        dde.drawOrb(pointLightPos[0], pointLightPos[1], pointLightPos[2], 0.5f);
         dde.drawGrid(Axis::Y, s_origin);
         dde.drawGrid(Axis::Z, s_origin);
         dde.end();
@@ -198,13 +201,16 @@ int LearnBgfx::Run(const char* configFile) {
         bgfx::setViewRect(0, 0, 0, kWidth, kHeight);
 
         bgfx::touch(0);
+        
+        SetColorUniform(u_pointLightColor, pointLight.color.c_str());
+        bgfx::setUniform(u_pointLightPos, pointLightPos);
 
-        for (auto&& square : squares) {
+        for (auto&& square : configLoadResult.squares) {
             const char* colorString = square.color.c_str();
             SubmitMesh(square.transform, colorString, m_squareVbh, m_squareIbh);
         }
 
-        for (auto&& plane : planes) {
+        for (auto&& plane : configLoadResult.planes) {
             const char* colorString = plane.color.c_str();
             SubmitMesh(plane.transform, colorString, m_planeVbh, m_planeIbh);
         }
@@ -220,24 +226,30 @@ int LearnBgfx::Run(const char* configFile) {
     return 0;
 }
 
+void LearnBgfx::SetColorUniform(bgfx::UniformHandle& uniformHandle, const char* colorString) {
+    if (strcmp(colorString, "red") == 0) {
+        bgfx::setUniform(uniformHandle, red);
+    } else if (strcmp(colorString, "white") == 0) {
+        bgfx::setUniform(uniformHandle, white);
+    } else {
+        bgfx::setUniform(uniformHandle, error);
+    }
+}
+
 void LearnBgfx::SubmitMesh(lb::Transform transform, const char* colorString, bgfx::VertexBufferHandle& vbh, bgfx::IndexBufferHandle& ibh) {
-    float mtx[16];
     // creates scaled, rotated, translated matrix
-    bx::mtxSRT(mtx,
+    float modelMatrix[16];
+    bx::mtxSRT(modelMatrix,
         transform.scale.x,    transform.scale.y,    transform.scale.z,
         transform.rotation.x, transform.rotation.y, transform.rotation.z,
         transform.position.x, transform.position.y, transform.position.z);
-    bgfx::setTransform(mtx);
+    bgfx::setTransform(modelMatrix);
+    bgfx::setUniform(u_modelMatrix, modelMatrix);
+
     bgfx::setVertexBuffer(0, vbh);
     bgfx::setIndexBuffer(ibh);
 
-    if (strcmp(colorString, "red") == 0) {
-        bgfx::setUniform(u_color, red);
-    } else if (strcmp(colorString, "white") == 0) {
-        bgfx::setUniform(u_color, white);
-    } else {
-        bgfx::setUniform(u_color, error);
-    }
+    SetColorUniform(u_color, colorString);
 
     bgfx::setState(BGFX_STATE_DEFAULT); // default renders triangles
     bgfx::submit(0, m_program); // submit primitive for rendering to view 0

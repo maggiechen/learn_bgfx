@@ -20,7 +20,7 @@ COMPILER_FLAGS = -w -DBX_CONFIG_DEBUG -DLINUX -std=c++17
 # Source files
 SOURCES = main.cpp getting_started/LearnBgfx.cpp \
     getting_started/GeometryLoader.cpp \
-    getting_started/PosColorVertex.cpp \
+    getting_started/Vertex.cpp \
     getting_started/ShaderLoader.cpp \
     getting_started/SquarePrimitive.cpp \
     getting_started/PlanePrimitive.cpp \

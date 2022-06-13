@@ -4,11 +4,15 @@
 #include <fstream>
 #include <vector>
 #include <math.h>
+
 const std::unordered_map<std::string, PrimitiveType> GeometryLoader::s_primitiveTypes = {
     {"square", PrimitiveType::Square},
-    {"plane", PrimitiveType::Plane}
+    {"plane", PrimitiveType::Plane},
 };
 
+const std::unordered_map<std::string, LightType> GeometryLoader::s_lightTypes = {
+    {"point", LightType::Point}
+};
 float degreesToRadians(float degrees) {
     return degrees * M_PI / (float)180;
 }
@@ -26,11 +30,7 @@ std::ostream& operator<<(std::ostream& os, const lb::Transform& t) {
 }
 
 void GeometryLoader::loadConfigFile(const char* configFile,
-                                    std::vector<lb::Square>& squares,
-                                    std::vector<lb::Plane>& planes,
-                                    float& cameraSpeed, bool& hasCameraSpeed,
-                                    float& mouseSensitivity, bool& hasMouseSensitivity,
-                                    float& zoomSensitivity, bool& hasZoomSensitivity) {
+                                    ConfigLoadResult& configLoadResult) {
     std::ifstream file;
     file.open(configFile);
     if (!file.is_open()) {
@@ -40,18 +40,18 @@ void GeometryLoader::loadConfigFile(const char* configFile,
     json j;
     file >> j;
     if (j.find("cameraSpeed") != j.end()) {
-        cameraSpeed = j["cameraSpeed"];
-        hasCameraSpeed = true;
+        configLoadResult.cameraSpeed = j["cameraSpeed"];
+        configLoadResult.hasCameraSpeed = true;
     }
 
     if (j.find("mouseSensitivity") != j.end()) {
-        mouseSensitivity = j["mouseSensitivity"];
-        hasMouseSensitivity = true;
+        configLoadResult.mouseSensitivity = j["mouseSensitivity"];
+        configLoadResult.hasMouseSensitivity = true;
     }
 
     if (j.find("zoomSensitivity") != j.end()) {
-        zoomSensitivity = j["zoomSensitivity"];
-        hasZoomSensitivity = true;
+        configLoadResult.zoomSensitivity = j["zoomSensitivity"];
+        configLoadResult.hasZoomSensitivity = true;
     }
 
     if (j.find("shapes") == j.end()) {
@@ -61,7 +61,6 @@ void GeometryLoader::loadConfigFile(const char* configFile,
 
     json shapes = j["shapes"];
     LOG(shapes.size() << " shape(s) loaded.");
-
     for (json shape : shapes) {
         auto primitive = shape["primitive"].get<std::string>();
         auto it = s_primitiveTypes.find(primitive);
@@ -74,21 +73,40 @@ void GeometryLoader::loadConfigFile(const char* configFile,
             auto details = shape["details"].get<lb::Square>();
             // convert degrees to radians for rotation
             convertRotationFromDegreesToRadians(details.transform);
-            squares.push_back(details);
+            configLoadResult.squares.push_back(details);
         }
         break;
         case PrimitiveType::Plane:
         {
             auto details = shape["details"].get<lb::Plane>();
             convertRotationFromDegreesToRadians(details.transform);
-            planes.push_back(details);
+            configLoadResult.planes.push_back(details);
         }
         break;
         default:
             LOG("Unknown shape: " << shape);
         }
     }
+    LOG("Squares loaded:" << configLoadResult.squares.size());
+    LOG("Planes loaded:" << configLoadResult.planes.size());
 
-    LOG("Squares loaded:" << squares.size());
-    LOG("Planes loaded:" << planes.size());
+    json lights = j["lights"];
+    for (json light : lights) {
+        auto lightType = light["type"].get<std::string>();
+        auto it = s_lightTypes.find(lightType);
+        if (it == s_lightTypes.end()) {
+            continue;
+        }
+        switch (it->second) {
+            case LightType::Point:
+            {
+                auto details = light["details"].get<lb::PointLight>();
+                configLoadResult.pointLights.push_back(details);
+            }
+            break;
+            default:
+            LOG("Unknown light: " << light);
+        }
+    }
+    LOG(configLoadResult.pointLights.size() << " point light(s) loaded.");
 }

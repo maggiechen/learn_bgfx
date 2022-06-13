@@ -7,9 +7,10 @@
 //     and typically only one is necessary."
 // It will just say that it can't find the varying variable, which is a very unintuitive error. 
 
-$input a_position, a_texcoord0
-$output v_color0
-
+$input a_position, a_texcoord0, a_normal
+$output v_color0, v_pos, v_normal, v_pointLightPos
+uniform vec4 u_pointLightPos;
+uniform mat4 u_modelMatrix;
 #include <bgfx_shader.sh>
 
 void main()
@@ -17,4 +18,8 @@ void main()
     // u_modelViewProj is from the bgfx_shader header. 
     gl_Position = mul(u_modelViewProj, vec4(a_position, 1.0));
     v_color0 = vec4(a_texcoord0, 0, 1.0);
+    v_pointLightPos = (transpose(u_modelMatrix) * u_pointLightPos).xyz;
+    v_pos = a_position;
+    v_normal = a_normal;
+
 }
