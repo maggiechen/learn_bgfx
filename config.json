@@ -5,8 +5,8 @@
             "details": {
                 "color": "red",
                 "transform": {
-                    "position": {"x": -3, "y": -3, "z": -2},
-                    "rotation": {"x": 0, "y": -45, "z": 0},
+                    "position": {"x": -3, "y": 1, "z": -2},
+                    "rotation": {"x": 35, "y": -45, "z": 0},
                     "scale": {"x": 2, "y": 2, "z": 2}
                 }
             }
@@ -17,7 +17,7 @@
                 "color": "white",
                 "transform": {
                     "position": {"x": -1, "y": 3, "z": -1},
-                    "rotation": {"x": 0, "y": 0, "z": 0},
+                    "rotation": {"x": 0, "y": 170, "z": 0},
                     "scale": {"x": 1.5, "y": 1.5, "z": 1.5}
                 }
             }
@@ -28,7 +28,7 @@
                 "color": "red",
                 "transform": {
                     "position": {"x": 0, "y": 0, "z": 0},
-                    "rotation": {"x": 0, "y": 0, "z": 0},
+                    "rotation": {"x": 35, "y": 0, "z": -35},
                     "scale": {"x": 1, "y": 1, "z": 1}
                 }
             }
@@ -40,7 +40,7 @@
                 "transform": {
                     "position": {"x": 0, "y": 0, "z": 0},
                     "rotation": {"x": 0, "y": 0, "z": 0},
-                    "scale": {"x": 10, "y": 1, "z": 10}
+                    "scale": {"x": 15, "y": 1, "z": 15}
                 }
             }
         }
@@ -49,7 +49,7 @@
         {
             "type": "point",
             "details": {
-                "position": {"x": 10, "y": 8, "z": 0},
+                "position": {"x": 3, "y": 8, "z": 0},
                 "intensity": 2,
                 "color": "white"
             }

@@ -12,7 +12,7 @@ private:
     static bx::Vec3 s_lookDirection;
     static float s_yaw;
     static float s_pitch;
-    static bool s_invertQuickView;
+    static bool s_ctrlPressed;
 
     static void UpdateLookDirection();
     static float GetFocalDistance();

@@ -10,7 +10,7 @@ bx::Vec3 CameraNavigation::s_eyePos = { 0.0f, 0.0f, 10.0f };
 bx::Vec3 CameraNavigation::s_focus = { 0.0f, 0.0f, 0.0f };
 bx::Vec3 CameraNavigation::s_up = { 0.0f, 1.0f, 0.0f };
 bx::Vec3 CameraNavigation::s_lookDirection = { 0.0f, -1.0f, 0.0f };
-bool CameraNavigation::s_invertQuickView = false;
+bool CameraNavigation::s_ctrlPressed = false;
 bool first = true;
 
 void CameraNavigation::MoveForward() {
@@ -47,6 +47,12 @@ float CameraNavigation::GetFocalDistance() {
 }
 
 void CameraNavigation::Pan(int deltaX, int deltaY) {
+    if (s_ctrlPressed) {
+        if (!first) {
+            first = true;
+        }
+        return;
+    }
     if (first) {
         first = false;
         deltaX = 0;
@@ -58,11 +64,17 @@ void CameraNavigation::Pan(int deltaX, int deltaY) {
 }
 
 void CameraNavigation::Zoom(int zoomAmount) {
+    if (s_ctrlPressed) {
+        if (!first) {
+            first = true;
+        }
+        return;
+    }
     s_eyePos = bx::add(s_eyePos, bx::mul(s_lookDirection, zoomAmount * s_zoomSensitivity));
 }
 
 void CameraNavigation::SetTopView() {
-    if (s_invertQuickView) {
+    if (s_ctrlPressed) {
         SetBottomView();
         return;
     }
@@ -82,7 +94,7 @@ void CameraNavigation::SetBottomView() {
 }
 
 void CameraNavigation::SetFrontView() {
-    if (s_invertQuickView) {
+    if (s_ctrlPressed) {
         SetBackView();
         return;
     }
@@ -103,7 +115,7 @@ void CameraNavigation::SetBackView() {
 }
 
 void CameraNavigation::SetRightView() {
-    if (s_invertQuickView) {
+    if (s_ctrlPressed) {
         SetLeftView();
         return;
     }
@@ -124,11 +136,11 @@ void CameraNavigation::SetLeftView() {
 }
 
 void CameraNavigation::InvertQuickView() {
-    s_invertQuickView = true;
+    s_ctrlPressed = true;
 }
 
 void CameraNavigation::DoNotInvertQuickView() {
-    s_invertQuickView = false;
+    s_ctrlPressed = false;
 }
 
 bx::Vec3& CameraNavigation::GetEyePos() {
