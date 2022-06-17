@@ -1,4 +1,7 @@
-# Linux Setup [ Debugging is not as good as w/ Windows. ]
+# Purpose
+A lightweight geometry parser w/ WASD navigation + Blender-type numpad shortcuts for shader experiments.
+
+# Linux Setup
 Built using Ubuntu on WSL, using VS Code Server. Makefiles were manually written, although there exists a [Cmake option for BGFX](https://github.com/widberg/bgfx.cmake). 
 
 Run through [MobaXTerm](https://mobaxterm.mobatek.net/demo.html) terminal connecting to WSL, as graphical applications are not supported out of the box with WSL currently. MobaXTerm facilitates forwarding of the WSL DISPLAY environment variable to Windows desktop. 
