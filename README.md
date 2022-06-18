@@ -23,7 +23,7 @@ Watch: https://www.youtube.com/watch?v=oUQJm755GwY
 
 **Turn on hardware acceleration.**
 
-![](mobaxterm_recommended_settings.png)
+![](mobaxterm_recommended_settings.PNG)
 
 Linux setup used from [bgfx build setup](https://bkaradzic.github.io/bgfx/build.html), with additional SDL2 library:
 
